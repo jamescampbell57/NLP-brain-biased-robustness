@@ -60,6 +60,7 @@ class _ResponseKind:
     hp_fmri: str
     hp_meg: str
     generic: str
+    ns_froi: str
 
 
 ResponseKind = _ResponseKind(**dict((f.name, f.name) for f in dataclasses.fields(_ResponseKind)))

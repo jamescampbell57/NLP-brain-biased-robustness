@@ -186,7 +186,7 @@ def named_variations(name):
         num_runs = 100
         min_memory = 4 * 1024 ** 3
     else:
-        raise ValueError('Unknown name: {}. Valid choices are: \n{}'.format(name.var, '\n'.join(name.tests)))
+        raise ValueError(f"Unknown name: {name.var}. Valid choices are: {' '.join(name.tests)}.")
 
     return training_variations, settings, num_runs, min_memory, auxiliary_loss_tasks
 
@@ -216,4 +216,4 @@ def match_variation(variation_set_name, training_variation):
         t_name = t.name if isinstance(t, TrainingVariation) else str(tuple(t))
         if training_variation_name == t_name:
             return t
-    raise ValueError('Unable to match training_variation: {}'.format(training_variation))
+    raise ValueError(f'Unable to match training_variation: {training_variation}.')
