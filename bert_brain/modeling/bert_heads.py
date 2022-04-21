@@ -12,8 +12,8 @@ import numpy as np
 import torch
 from torch import nn
 from pytorch_pretrained_bert.modeling import BertConfig, \
-    BertPreTrainedModel, BertModel, CONFIG_NAME, WEIGHTS_NAME, PRETRAINED_MODEL_ARCHIVE_MAP, TF_WEIGHTS_NAME, \
-    cached_path, load_tf_weights_in_bert, gelu, BertLayerNorm
+    PreTrainedBertModel, BertModel, CONFIG_NAME, WEIGHTS_NAME, PRETRAINED_MODEL_ARCHIVE_MAP, \
+    cached_path, gelu, BertLayerNorm
 
 from ..common import NamedSpanEncoder
 from .utility_modules import GroupPool, GroupConcat, at_most_one_data_id, k_data_ids
@@ -536,7 +536,7 @@ class MultiPredictionHead(torch.nn.Module):
         return state_dict
 
 
-class BertMultiPredictionHead(BertPreTrainedModel):
+class BertMultiPredictionHead(PreTrainedBertModel):
 
     def __init__(
             self,
@@ -604,7 +604,7 @@ class BertMultiPredictionHead(BertPreTrainedModel):
                         from_tf=False, map_location='default_map_location', *inputs, **kwargs):
         """
         Copied from pytorch_pretrained_bert modeling.py so we can pass a map_location argument
-        Instantiate a BertPreTrainedModel from a pre-trained model file or a pytorch state dict.
+        Instantiate a PreTrainedBertModel from a pre-trained model file or a pytorch state dict.
         Download and cache the pre-trained model file if needed.
 
         Params:
@@ -652,7 +652,7 @@ class BertMultiPredictionHead(BertPreTrainedModel):
             logger.info("loading archive file {} from cache at {}".format(
                 archive_file, resolved_archive_file))
         tempdir = None
-        if os.path.isdir(resolved_archive_file) or from_tf:
+        if os.path.isdir(resolved_from_tf):
             serialization_dir = resolved_archive_file
         else:
             # Extract archive to temp dir
@@ -676,10 +676,6 @@ class BertMultiPredictionHead(BertPreTrainedModel):
         if tempdir:
             # Clean up temp dir
             shutil.rmtree(tempdir)
-        if from_tf:
-            # Directly load from a TensorFlow checkpoint
-            weights_path = os.path.join(serialization_dir, TF_WEIGHTS_NAME)
-            return load_tf_weights_in_bert(model, weights_path)
         # Load from a PyTorch state_dict
         old_keys = []
         new_keys = []
