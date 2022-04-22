@@ -557,7 +557,6 @@ class HarryPotterCorpus(CorpusBase):
         return all_subject_data, masks
 
     def _harry_potter_fmri_word_info(self, run_lengths):
-
         time_images = np.arange(1351) * 2
         words = np.load(os.path.join(self.path, 'words_fmri.npy'), allow_pickle=True)
         words = [w.item() for w in words]
