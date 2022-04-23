@@ -519,39 +519,21 @@ class HarryPotterCorpus(CorpusBase):
 
     def _read_harry_potter_fmri_files(self):
         # noinspection PyPep8
-        subject_runs = dict(
-            F=[4, 5, 6, 7],
-            G=[3, 4, 5, 6],
-            H=[3, 4, 9, 10],
-            I=[7, 8, 9, 10],
-            J=[7, 8, 9, 10],
-            K=[7, 8, 9, 10],
-            L=[7, 8, 9, 10],
-            M=[7, 8, 9, 10],
-            N=[7, 8, 9, 10])
-
-        subjects = self.fmri_subjects
-        if subjects is None:
-            subjects = list(subject_runs.keys())
+        subjects = ['F','H','I','J','K','L','M','N']
 
         if isinstance(subjects, str):
             subjects = [subjects]
-
-        path_fmt = os.path.join(self.path, 'fmri', '{subject}', 'funct', '{run}', 'ars{run:03}a001.hdr')
+        
+        path_fmt = os.path.join(self.path, 'fmri/data_subject_{subject}.npy')
 
         all_subject_data = OrderedDict()
         masks = OrderedDict()
 
         for subject in subjects:
-            if subject not in subject_runs:
-                raise ValueError('Unknown subject: {}. Known values are: {}'.format(subject, list(subject_runs.keys())))
-            subject_data = list()
-            for run in subject_runs[subject]:
-                functional_file = path_fmt.format(subject=subject, run=run)
-                data = nibabel.load(functional_file).get_data()
-                subject_data.append(np.transpose(data))
-
-            masks[subject] = get_mask_for_subject(subject)
+            functional_file = path_fmt.format(subject=subject)
+            subject_data = np.load(functional_file)
+            
+            masks[subject] = subject_data
             all_subject_data[subject] = subject_data
 
         return all_subject_data, masks
@@ -644,6 +626,8 @@ class HarryPotterCorpus(CorpusBase):
             if run_lengths is None:
                 run_lengths = [len(r) for r in data[subject]]
             else:
+                print([len(r) for r in data[subject]])
+                #print(run_lengths)
                 assert (np.array_equal([len(r) for r in data[subject]], run_lengths))
 
         assert(np.array_equal(run_lengths, HarryPotterCorpus.static_run_lengths))
@@ -828,9 +812,7 @@ def harry_potter_leave_out_fmri_run(raw_data, index_variation_run, random_state=
 
 
 def get_mask_for_subject(subject):
-    if subject in ['H', 'L', 'K']:
-        return cortex.db.get_mask('fMRI_story_{}'.format(subject), '{}_ars_auto2'.format(subject), 'thick')
-    return cortex.db.get_mask('fMRI_story_{}'.format(subject), '{}_ars'.format(subject), 'thick')
+    return cortex.db.get_mask('data_subject_{}'.format(subject), '{}_ars_auto2'.format(subject), 'thick')
 
 
 def get_indices_from_normalized_coordinates(subject, x, y, z, closest_k=None, distance=None):
