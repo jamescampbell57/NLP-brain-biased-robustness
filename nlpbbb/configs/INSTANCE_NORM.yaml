@@ -1,0 +1,3 @@
+---
+model:
+    norm_schemes: ["instance", "instance"]
