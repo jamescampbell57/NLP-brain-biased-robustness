@@ -1,14 +1,14 @@
 # claims imports
-import universeg as uvs
+import nlpbbb as bbb
 import submitit
 import yaml
 import itertools
 import copy
 
 
-def run_submitit_job_array(config_dicts, timeout=720, mem=64, num_gpus=1):
+def run_submitit_job_array(config_dicts, root="/home/vib9/src/NLP-brain-biased-robustness", timeout=720, mem=64, num_gpus=1):
     jobs = []
-    executor = submitit.AutoExecutor(folder="/home/vib9/src/UniverSandbox/bash/submitit")
+    executor = submitit.AutoExecutor(folder=f"{root}/bash/submitit")
     executor.update_parameters(timeout_min=timeout, mem_gb=mem, gpus_per_node=num_gpus, slurm_partition="sablab", slurm_wckey="")
     for config in config_dicts:
         job = executor.submit(uvs.training_funcs.train_net, config)
@@ -44,9 +44,9 @@ def gen_training_name(run_dict, params):
         return_name += f"/{field}"
     return return_name
 
-def create_gridsearch(params, merge_default=False, default=None):
+def create_gridsearch(params, root="/home/vib9/src/NLP-brain-biased-robustness", merge_default=False, default=None):
     if not default:
-        with open("/home/vib9/src/UniverSeg/universeg/torch/configs/DEFAULT.yaml",'r') as stream:
+        with open(f"{root}/nlpbbb/configs/DEFAULT.yaml",'r') as stream:
             default = yaml.safe_load(stream)
         
     #new_dicts = [return_empty_dict_copy(default) for _ in range(get_num_options(params))]
@@ -96,46 +96,3 @@ def merge_dicts(od, nd):
         else:
             merged_dict[key] = original_dict[key]
     return merged_dict
-
-    
-def get_net(args):
-    if args["model"]["type"] == "ConcatUNet":
-        model = uvs.networks.ConcatUNet
-        kwargs = {"support_set_size": args["dataset"]["max_support_set"],
-                  "pad_slices": args["dataset"]["pad_slices"]}
-        input_ch = 1
-    elif args["model"]["type"] == "UniverSeg":
-        model = uvs.networks.UniverSeg
-        kwargs = {"pad_slices": args["dataset"]["pad_slices"],
-                  "nf_supp": args["model"]["num_feat"],
-                  "support_set_size": args["dataset"]["max_support_set"]}
-        input_ch = 1
-    elif args["model"]["type"] == "AttentionUNet":
-        model = uvs.networks.AttentionUNet
-        kwargs = {"do_qscc": args.no_querysupport_crossconv,
-                  "do_sscc": args.no_supportsupport_crossconv,
-                  "use_attention": args.use_attention,
-                  "pad_slices": args["dataset"]["pad_slices"]}
-        input_ch = 1
-    elif args["model"]["type"] == "SMCnoinx":
-        model = uvs.networks.SMCnoinx
-        kwargs = {"pad_slices": args["dataset"]["pad_slices"],
-                  "nf_supp": args["model"]["num_feat"],
-                  "support_set_size": args["dataset"]["max_support_set"],
-                  "norm_schemes": args["model"]["norm_schemes"]}
-        input_ch = 1
-    elif args["model"]["type"] == "UNet":
-        model = uvs.networks.UNet
-        input_ch = 1+2*args["dataset"]["pad_slices"]
-        kwargs = {}
-    else:
-        raise ValueError("Net type not implemented yet.")
-
-    net = model(input_ch=input_ch,
-                out_ch=1,
-                nf=args["model"]["num_feat"],
-                num_repeats=args["model"]["num_reps"],
-                num_levels=args["model"]["num_levels"],
-                **kwargs)
-
-    return net

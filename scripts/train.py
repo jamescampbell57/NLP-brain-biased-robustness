@@ -14,11 +14,12 @@ import yaml
 import sys
 
 if __name__ == "__main__":
-    with open("/home/vib9/src/UniverSeg/universeg/torch/configs/DEFAULT.yaml", 'r') as stream:
-        args = yaml.safe_load(stream)
+    root = "/home/vib9/src/NLP-brain-biased-robustness"
+    with open(f"{root}/nlpbbb/configs/DEFAULT.yaml", 'r') as stream:
+        config = yaml.safe_load(stream)
     if len(sys.argv) > 1:
-        new_config = f"/home/vib9/src/UniverSeg/universeg/torch/configs/{sys.argv[1]}.yaml"
+        new_config = f"{root}/nlpbbb/configs/{sys.argv[1]}.yaml"
         with open(new_config, 'r') as stream:
-            new_args = yaml.safe_load(stream)
-        args = bbb.setup.merge_dicts(args, new_args)
-    bbb.training_funcs.train_net(args)
+            new_config = yaml.safe_load(stream)
+        config = bbb.setup.merge_dicts(config, new_config)
+    bbb.training_loops.run_training_config(config)

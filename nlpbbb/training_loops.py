@@ -18,7 +18,6 @@ def train_loop(args, epoch, model, dataloader, optimizer, lr_scheduler, loss_fn,
     #training loop
     with tqdm(total=len(dataloader), desc=f'Training Epoch {epoch + 1}/{args["training"]["epochs"]}', unit='batch') as pbar:
         for batch in dataloader: #tryin unpacking text from 'labels' as in model development
-            #batch = {k: v.to(device) for k, v in batch.items()}
             features = {k: v.to(device) for k, v in batch.items() if k != 'labels'}
             preds = model(features)
             targets = F.one_hot((batch['labels']-1).to(torch.int64), num_classes=5).to(device)
@@ -36,7 +35,6 @@ def val_loop(args, epoch, model, dataloader, device):
     num_samples = 0
     with tqdm(total=len(dataloader), desc=f'Validation Epoch {epoch + 1}/{args["training"]["epochs"]}', unit='batch') as pbar:
         for batch in dataloader:
-            #batch = {k: v.to(device) for k, v in batch.items()}
             features = {k: v.to(device) for k, v in batch.items() if k != 'labels'}
             with torch.no_grad():
                 preds = model(features)
