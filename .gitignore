@@ -1,4 +1,6 @@
 data/*
 NSD/annotations/*
 annotations_trainval2017.zip
-
+results/
+scripts/wandb/
+*.pyc
