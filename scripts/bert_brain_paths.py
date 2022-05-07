@@ -11,10 +11,10 @@ class Paths:
     default_relative_harry_potter_path = 'harry_potter'
     default_relative_glue_path = os.path.join('GLUE', 'glue_data')
 
-    pre_trained_base_path: str = '/home/vib9/src/NLP-brain-biased-robustness/pretrained_BERT/'
-    result_path: str = '/home/vib9/src/NLP-brain-biased-robustness/results/'
-    data_set_base_path: str = '/home/vib9/src/NLP-brain-biased-robustness/data/'
-    model_path: str = '/home/vib9/src/NLP-brain-biased-robustness/models/'
+    pre_trained_base_path: str = '~/NLP-brain-biased-robustness/pretrained_BERT/'
+    result_path: str = '~/NLP-brain-biased-robustness/results/'
+    data_set_base_path: str = '~/NLP-brain-biased-robustness/data/'
+    model_path: str = '~/NLP-brain-biased-robustness/models/'
 
     pre_trained_path: Optional[str] = None
     cache_path: Optional[str] = None
