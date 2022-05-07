@@ -1,40 +1,21 @@
 ---
-training:
+experiment:
     name: "default"
-    seed: 0
-    lr: 0.0001
-    batch_size: 1
-    epochs: 10000
-    num_iters: 400
+    experiment_type: "Amazon"
+    epochs: 2
+    val_frequency: 3
+    batchsize: 8
 dataset:
-    name: "MegaMedical"
-    with_replacement: True
-    mid_slice_selection: True
-    mid_slice_selection_min_voxels: 10
-    min_support_set: 1
-    max_support_set: 10
-    train_dsets: []
-    val_dsets: []
-    train_dsets_exclude: []
-    train_labels: []
-    val_labels: []
-    limited_dsets: []
-    num_subj: -1
-    pad_slices: 0
-    fix_axis: -1
-    include_query_chance: 0
-    augs: ["rot-all", "int"]
-    use_half: True
+    train_datasets: ["Baby_v1_00"]
+    val_datasets: []
+    limit: 1000
+    seed: 42
 model:
-    type: "SMCnoinx"
-    num_feat: 128
-    num_levels: 3
-    num_reps: 2
-    norm_schemes: ["None", "None"]
+    num_out: 5
+    sigmoid: False
+    return_CLS_rep: False
 loss: 
-    name: "dice"
-    eps: 1
+    name: 
 misc:
-    show_output: True
-    save: False
+    save: True
 

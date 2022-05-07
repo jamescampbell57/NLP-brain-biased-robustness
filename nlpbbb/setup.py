@@ -5,6 +5,13 @@ import yaml
 import itertools
 import copy
 
+def get_experiment(config):
+    if config["experiment"]["experiment_type"] == "Amazon":
+        exp = bbb.TorchExperiments.AmazonExperiment.Experiment
+    else:
+        raise ValueError("Experiment not implemented yet!")
+        
+    return exp(config)
 
 def run_submitit_job_array(config_dicts, root="/home/vib9/src/NLP-brain-biased-robustness", timeout=720, mem=64, num_gpus=1):
     jobs = []
