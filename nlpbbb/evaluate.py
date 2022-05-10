@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
-
 
 def evaluate(model, dataloader, task):
     if task == 'sst2_imdb':

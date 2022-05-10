@@ -14,7 +14,7 @@ import yaml
 import sys
 
 if __name__ == "__main__":
-    root = "/home/vib9/src/NLP-brain-biased-robustness"
+    root = "/home/ubuntu/src/NLP-brain-biased-robustness"
     with open(f"{root}/nlpbbb/configs/DEFAULT.yaml", 'r') as stream:
         config = yaml.safe_load(stream)
     if len(sys.argv) > 1:

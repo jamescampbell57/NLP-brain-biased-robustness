@@ -12,7 +12,7 @@ def load_obj(name):
         return pickle.load(f)
     
     
-def save_model(exp, optimizer, loss, config, date, epoch, save_dir="/home/vib9/src/NLP-brain-biased-robustness/results/models"):
+def save_model(exp, optimizer, loss, config, date, epoch, save_dir="/home/ubuntu/NLP-brain-biased-robustness/results/models"):
     models_root = os.path.join(save_dir, date, config["experiment"]["name"])
 
     if not os.path.exists(models_root):

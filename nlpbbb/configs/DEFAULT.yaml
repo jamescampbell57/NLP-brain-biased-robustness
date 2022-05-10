@@ -14,6 +14,8 @@ model:
     num_out: 5
     sigmoid: False
     return_CLS_rep: False
+    #added type
+    type: 'BERT'
 loss: 
     name: 
 misc:

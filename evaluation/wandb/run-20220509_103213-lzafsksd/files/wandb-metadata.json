@@ -1,0 +1,24 @@
+{
+    "os": "Linux-5.4.0-109-generic-x86_64-with-glibc2.29",
+    "python": "3.8.10",
+    "heartbeatAt": "2022-05-09T10:32:15.128777",
+    "startedAt": "2022-05-09T10:32:13.793662",
+    "docker": null,
+    "gpu": "Tesla T4",
+    "gpu_count": 1,
+    "cpu_count": 4,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "quick_run_all.py",
+    "codePath": "evaluation/quick_run_all.py",
+    "git": {
+        "remote": "https://github.com/jamescampbell57/NLP-brain-biased-robustness.git",
+        "commit": "f78ff318e52a81b08c9019960ba438d226a525d0"
+    },
+    "email": "jgc239@cornell.edu",
+    "root": "/home/ubuntu/NLP-brain-biased-robustness",
+    "host": "james-brain-biased-robustness",
+    "username": "ubuntu",
+    "executable": "/home/ubuntu/environments/my_env/bin/python"
+}
