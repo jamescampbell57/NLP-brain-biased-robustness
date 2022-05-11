@@ -26,7 +26,7 @@ class AmazonBERT(nn.Module):
 
     
 class MNLIBert(nn.Module):
-    def __init__(self):
+    def __init__(self, model_config):
         super().__init__()
         self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
         self.bert = BertModel.from_pretrained('bert-base-cased')
@@ -47,7 +47,7 @@ class MNLIBert(nn.Module):
     
     
 class SST2BERT(nn.Module):
-    def __init__(self, num_out=1, sigmoid=False, return_CLS_representation=False):
+    def __init__(self, model_config):
         super().__init__()
         #self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased') 
         self.bert = BertModel.from_pretrained('bert-base-cased')
@@ -72,8 +72,9 @@ class SST2BERT(nn.Module):
             return self.sigmoid(pred)
         return pred
     
+    
 class STSBBERT(nn.Module):
-    def __init__(self):
+    def __init__(self, model_config):
         super().__init__()
         self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
         self.bert = BertModel.from_pretrained('bert-base-cased')
@@ -84,3 +85,48 @@ class STSBBERT(nn.Module):
         representations = self.bert(**embeddings).last_hidden_state
         cls_representation = representations[:,0,:]
         return cls_representation
+    
+    
+class YelpBERT(nn.Module):
+    def __init__(self, model_config):
+        super().__init__()
+        self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
+        self.bert = BertModel.from_pretrained('bert-base-cased')
+        self.linear = nn.Linear(768,num_out)
+        self.return_CLS_representation = return_CLS_representation
+        self.sigmoid_bool = sigmoid
+        self.sigmoid = nn.Sigmoid()
+        self.device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+    def forward(self, x):
+        embeddings = self.tokenizer(x, return_tensors='pt', padding=True, truncation=True)
+        embeddings.to(self.device)
+        representations = self.bert(**embeddings).last_hidden_state
+        cls_representation = representations[:,0,:]
+        pred = self.linear(cls_representation)
+        if self.return_CLS_representation:
+            return cls_representation
+        if self.sigmoid_bool:
+            return self.sigmoid(pred)
+        return pred
+    
+
+class ReCoRDBERT(nn.Module):
+    def __init__(self, model_config):
+        super().__init__()
+        #self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
+        self.bert = BertModel.from_pretrained('bert-base-cased')
+        self.linear = nn.Linear(768,num_out)
+        self.return_CLS_representation = return_CLS_representation
+        self.sigmoid_bool = sigmoid
+        self.sigmoid = nn.Sigmoid()
+    def forward(self, x):
+        #embeddings = self.tokenizer(x, return_tensors='pt', padding=True)
+        #embeddings.to(device)
+        representations = self.bert(**x).last_hidden_state
+        cls_representation = representations[:,0,:]
+        pred = self.linear(cls_representation)
+        if self.return_CLS_representation:
+            return cls_representation
+        if self.sigmoid_bool:
+            return self.sigmoid(pred)
+        return pred
