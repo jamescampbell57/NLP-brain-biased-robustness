@@ -1,0 +1,23 @@
+---
+experiment:
+    name: "default"
+    experiment_type: "ReCoRD"
+    epochs: 2
+    val_frequency: 3
+    batchsize: 8
+dataset:
+    train_datasets: ["Baby_v1_00"]
+    val_datasets: []
+    limit: 1000
+    seed: 42
+model:
+    num_out: 5
+    sigmoid: False
+    return_CLS_rep: False
+    #added type
+    type: 'BERT'
+loss: 
+    name: 
+misc:
+    save: True
+

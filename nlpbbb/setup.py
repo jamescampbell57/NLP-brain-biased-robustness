@@ -8,6 +8,16 @@ import copy
 def get_experiment(config):
     if config["experiment"]["experiment_type"] == "Amazon":
         exp = bbb.TorchExperiments.AmazonExperiment.Experiment
+    elif config["experiment"]["experiment_type"] == "MNLI":
+        exp = bbb.TorchExperiments.MNLIExperiment.Experiment
+    elif config["experiment"]["experiment_type"] == "SST2":
+        exp = bbb.TorchExperiments.SST2Experiment.Experiment
+    elif config["experiment"]["experiment_type"] == "STSB":
+        exp = bbb.TorchExperiments.STSBExperiment.Experiment
+    elif config["experiment"]["experiment_type"] == "ReCoRD":
+        exp = bbb.TorchExperiments.ReCoRDExperiment.Experiment
+    elif config["experiment"]["experiment_type"] == "Yelp":
+        exp = bbb.TorchExperiments.YelpExperiment.Experiment
     else:
         raise ValueError("Experiment not implemented yet!")
         
