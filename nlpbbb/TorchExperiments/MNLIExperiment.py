@@ -66,7 +66,7 @@ class MNLIDataset(Dataset):
         data_path = dataset_path+'/multinli_1.0/'
         if not os.path.exists(dataset_path):
             os.system('wget https://cims.nyu.edu/~sbowman/multinli/multinli_1.0.zip -P '+dataset_path)
-            os.system('unzip '+f'{dataset_config["root"]}/data/mnli/multinli_1.0.zip')
+            os.system(f'unzip {PATHS["root"]}/data/mnli/multinli_1.0.zip -d {PATHS["root"]}/data/mnli/')
         maxInt = sys.maxsize
         #From stackoverflow
         while True:
@@ -89,30 +89,6 @@ class MNLIDataset(Dataset):
         dev_matched = load_data('multinli_1.0_dev_matched.txt')
         dev_mismatched = load_data('multinli_1.0_dev_mismatched.txt')
         #gather subdatasets
-        telephone, letters, facetoface = split_data()
-        
-        if ds == "train_set":
-            self.dataset = simplify_data(train_set)[1:]
-        elif ds == "dev_matched":
-            self.dataset = simplify_data(dev_matched)[1:]
-        elif ds == "dev_mismatched":
-            self.dataset = simplify_data(dev_mismatched)[1:]
-        elif ds == "telephone":
-            self.dataset = simplify_data(telephone)
-        elif ds == "letters":
-            self.dataset = simplify_data(letters)
-        elif ds == "facetoface":
-            self.dataset = simplify_data(facetoface)
-        else:
-            raise ValueError("Dataset not implemented")
-        
-    def __getitem__(self, idx):
-        return self.tokenized_data[idx]
-    
-    def __len__(self):
-        return len(self.tokenized_data)
-    
-    def split_data():
         telephone = []
         letters = []
         facetoface = []
@@ -130,9 +106,28 @@ class MNLIDataset(Dataset):
         extract(dev_matched)
         extract(dev_mismatched)
         
-        return telephone, letters, facetoface
+        if ds == "train_set":
+            self.tokenized_data = self.simplify_data(train_set)[1:]
+        elif ds == "dev_matched":
+            self.tokenized_data = self.simplify_data(dev_matched)[1:]
+        elif ds == "dev_mismatched":
+            self.tokenized_data = self.simplify_data(dev_mismatched)[1:]
+        elif ds == "telephone":
+            self.tokenized_data = self.simplify_data(telephone)
+        elif ds == "letters":
+            self.tokenized_data = self.simplify_data(letters)
+        elif ds == "facetoface":
+            self.tokenized_data = self.simplify_data(facetoface)
+        else:
+            raise ValueError("Dataset not implemented")
+        
+    def __getitem__(self, idx):
+        return self.tokenized_data[idx]
     
-    def simplify_data(dataset):
+    def __len__(self):
+        return len(self.tokenized_data)
+    
+    def simplify_data(self, dataset):
         simplified_dataset = []
         for item in dataset:
             i = 0
