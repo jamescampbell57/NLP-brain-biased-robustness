@@ -16,6 +16,9 @@ import os
 import sys
 import csv
 
+from nlpbbb.paths import PATHS
+
+
 class Experiment():
     
     def __init__(self, config):
@@ -59,7 +62,7 @@ class Experiment():
 
 class MNLIDataset(Dataset):
     def __init__(self, ds, dataset_config):
-        data_path = f'{dataset_config["root"]}/data/mnli/multinli_1.0/'
+        data_path = f'{PATHS["root"]}/data/mnli/multinli_1.0/'
         maxInt = sys.maxsize
         #From stackoverflow
         while True:

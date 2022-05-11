@@ -51,7 +51,6 @@ def get_num_options(original_dict):
     return num_options
 
 def gen_training_name(run_dict, params):
-    
     names = []
     for key in params.keys():
         if key != "misc":
