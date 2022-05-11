@@ -2,6 +2,8 @@ import os
 import pickle
 import torch
 
+from nlpbbb.paths import PATHS
+
 def save_obj(obj, name):
     with open(name, 'wb') as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
@@ -12,7 +14,9 @@ def load_obj(name):
         return pickle.load(f)
     
     
-def save_model(exp, optimizer, loss, config, date, epoch, save_dir="/home/ubuntu/NLP-brain-biased-robustness/results/models"):
+def save_model(exp, optimizer, loss, config, date, epoch):
+    root_dir = PATHS["root"]
+    save_dir = f"{root_dir}/results/models"
     models_root = os.path.join(save_dir, date, config["experiment"]["name"])
 
     if not os.path.exists(models_root):
