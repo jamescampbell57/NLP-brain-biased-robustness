@@ -5,6 +5,9 @@ import yaml
 import itertools
 import copy
 
+from nlpbbb.paths import PATHS
+
+
 def get_experiment(config):
     if config["experiment"]["experiment_type"] == "Amazon":
         exp = bbb.TorchExperiments.AmazonExperiment.Experiment
@@ -23,9 +26,9 @@ def get_experiment(config):
         
     return exp(config)
 
-def run_submitit_job_array(config_dicts, root="/home/ubuntu/NLP-brain-biased-robustness", timeout=720, mem=64, num_gpus=1):
+def run_submitit_job_array(config_dicts, timeout=720, mem=64, num_gpus=1):
     jobs = []
-    executor = submitit.AutoExecutor(folder=f"{root}/bash/submitit")
+    executor = submitit.AutoExecutor(folder=f'{PATHS["root"]}/bash/submitit')
     executor.update_parameters(timeout_min=timeout, mem_gb=mem, gpus_per_node=num_gpus, slurm_partition="sablab", slurm_wckey="")
     for config in config_dicts:
         job = executor.submit(uvs.training_funcs.train_net, config)
@@ -61,9 +64,9 @@ def gen_training_name(run_dict, params):
         return_name += f"/{field}"
     return return_name
 
-def create_gridsearch(params, root="/home/ubuntu/NLP-brain-biased-robustness", merge_default=False, default=None):
+def create_gridsearch(params, merge_default=False, default=None):
     if not default:
-        with open(f"{root}/nlpbbb/configs/DEFAULT.yaml",'r') as stream:
+        with open(f'{PATHS["root"]}/nlpbbb/configs/DEFAULT.yaml','r') as stream:
             default = yaml.safe_load(stream)
         
     #new_dicts = [return_empty_dict_copy(default) for _ in range(get_num_options(params))]

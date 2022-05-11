@@ -14,8 +14,8 @@ import yaml
 import sys
 
 if __name__ == "__main__":
-    root = "/home/ubuntu/src/NLP-brain-biased-robustness"
-    with open(f"{root}/nlpbbb/configs/DEFAULT.yaml", 'r') as stream:
+    root = "/home/vib9/src/NLP-brain-biased-robustness"
+    with open(f"{root}/nlpbbb/configs/Amazon_DEFAULT.yaml", 'r') as stream:
         config = yaml.safe_load(stream)
     if len(sys.argv) > 1:
         new_config = f"{root}/nlpbbb/configs/{sys.argv[1]}.yaml"

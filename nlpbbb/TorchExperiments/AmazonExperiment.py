@@ -52,7 +52,6 @@ class Experiment():
         num_samples = preds.size(0)
         return num_correct, num_samples
           
-     
 class AmazonDataset(Dataset):
     def __init__(self, ds, dataset_config):
         amazon_large = load_dataset('amazon_us_reviews', ds)
