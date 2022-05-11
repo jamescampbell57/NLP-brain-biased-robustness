@@ -41,9 +41,9 @@ def run_training_config(config):
     for epoch in range(num_epochs):
         #Run validation every so often, good to do before training
         if epoch % config["experiment"]["val_frequency"] == 0:
-            val_loss = val_loop(config["experiment"], exp, epoch, exp.train_loaders, device)
+            val_loss = val_loop(config["experiment"], exp, epoch, exp.val_loaders, device)
             
-        train_loss = train_loop(config["experiment"], exp, epoch, exp.val_loaders, optimizer, lr_scheduler, loss_fn, device)
+        train_loss = train_loop(config["experiment"], exp, epoch, exp.train_loaders, optimizer, lr_scheduler, loss_fn, device)
         
         #save whenever you validate
         if epoch % config["experiment"]["val_frequency"] == 0:
