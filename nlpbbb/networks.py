@@ -45,6 +45,7 @@ class MNLIBert(nn.Module):
         pred = self.linear(input_vec)
         return pred
     
+    
 class SST2BERT(nn.Module):
     def __init__(self, num_out=1, sigmoid=False, return_CLS_representation=False):
         super().__init__()
@@ -70,3 +71,16 @@ class SST2BERT(nn.Module):
         if self.sigmoid_bool:
             return self.sigmoid(pred)
         return pred
+    
+class STSBBERT(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
+        self.bert = BertModel.from_pretrained('bert-base-cased')
+        self.device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+    def forward(self, x):
+        embeddings = self.tokenizer(x, return_tensors='pt', padding=True, truncation=True)
+        embeddings.to(self.device)
+        representations = self.bert(**embeddings).last_hidden_state
+        cls_representation = representations[:,0,:]
+        return cls_representation

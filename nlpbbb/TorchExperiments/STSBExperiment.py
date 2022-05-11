@@ -14,8 +14,8 @@ import nlpbbb as bbb
 class Experiment():
     
     def __init__(self, config):
-        self.train_datasets = [AmazonDataset(ds, config["dataset"]) for ds in config["dataset"]["train_datasets"]]
-        self.val_datasets = [AmazonDataset(ds, config["dataset"]) for ds in config["dataset"]["val_datasets"]]
+        self.train_datasets = [STSBDataset(ds, config["dataset"]) for ds in config["dataset"]["train_datasets"]]
+        self.val_datasets = [STSBDataset(ds, config["dataset"]) for ds in config["dataset"]["val_datasets"]]
         
         # handels two cases: you want to validate internally or using another experiment object
         if len(self.train_datasets) == 1 and len(self.val_datasets) == 0:
@@ -33,27 +33,32 @@ class Experiment():
         self.model = self.get_model(config["model"])
                                            
     def get_model(self, model_config):
-        return bbb.networks.AmazonBERT(model_config)
+        return bbb.networks.STSBBERT(model_config)
         
     def train_forward_pass(self, batch, loss_fn, device):
-        features = {k: v.to(device) for k, v in batch.items() if k != 'labels'}
-        preds = self.model(features)
-        targets = F.one_hot((batch['labels']-1).to(torch.int64), num_classes=5).to(device)
-        loss = loss_fn(preds, targets.float()) #replace .loss
+        vec_1 = model(batch['sentence_1'])
+        vec_2 = model(batch['sentence_2'])
+        cosine_similarity_times_5 = cos(vec_1, vec_2) * 5
+        targets = batch['labels'].float().to(device)
+        loss = loss_function(cosine_similarity_times_5, targets) #replace .loss
         return loss
     
     def val_forward_pass(self, batch, device):
-        features = {k: v.to(device) for k, v in batch.items() if k != 'labels'}
-        preds = self.model(features)
-        preds = torch.argmax(preds, axis=1)
-        labels = F.one_hot((batch['labels']-1).to(torch.int64), num_classes=5).to(device)
-        labels = torch.argmax(labels, axis=1)
-        num_correct = (preds==labels).sum()
-        num_samples = preds.size(0)
-        return num_correct, num_samples
+        cosine_similarities = []
+        gold = []
+        
+        vec_1 = model(batch['sentence_1'])
+        vec_2 = model(batch['sentence_2'])
+        cosine_similarity = cos(vec_1, vec_2)
+        golds = batch['labels'].float()
+        for idx, similarity in enumerate(cosine_similarity):
+            cosine_similarities.append(similarity)
+            gold.append(golds[idx])
+            
+        return cosine_similarities, gold
 
 class STSBDataset(Dataset):
-    def __init__(self, dataset_config):
+    def __init__(self, ds, dataset_config):
         import csv
         data_path = '/home/ubuntu/NLP-brain-biased-robustness/data/stsb/stsbenchmark/'
 
@@ -107,6 +112,18 @@ class STSBDataset(Dataset):
         images_dataset = create_dataset(images)
         MSRpar_dataset = create_dataset(MSRpar)
         MSRvid_dataset = create_dataset(MSRvid)
+        
+        if ds == "headlines":
+            self.tokenized_data = headlines_dataset
+        elif ds == "images":
+            self.tokenized_data = images_dataset
+        elif ds == "MSRpar":
+            self.tokenized_data = MSRpar_dataset
+        elif ds == "MSRvid":
+            self.tokenized_data = MSRvid_dataset
+        else:
+            raise ValueError
+            
         
     def __getitem__(self, idx):
         return self.tokenized_data[idx]
