@@ -31,6 +31,7 @@ class Experiment():
         
         # really you only want to build a model for an experiment object if it is the train experiment
         self.model = self.get_model(config["model"])
+        self.cos = nn.CosineSimilarity(dim=1, eps=1e-6)
                                            
     def get_model(self, model_config):
         return bbb.networks.STSBBERT(model_config)
@@ -38,7 +39,7 @@ class Experiment():
     def train_forward_pass(self, batch, loss_fn, device):
         vec_1 = model(batch['sentence_1'])
         vec_2 = model(batch['sentence_2'])
-        cosine_similarity_times_5 = cos(vec_1, vec_2) * 5
+        cosine_similarity_times_5 = self.cos(vec_1, vec_2) * 5
         targets = batch['labels'].float().to(device)
         loss = loss_function(cosine_similarity_times_5, targets) #replace .loss
         return loss
