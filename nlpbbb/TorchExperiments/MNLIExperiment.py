@@ -62,7 +62,11 @@ class Experiment():
 
 class MNLIDataset(Dataset):
     def __init__(self, ds, dataset_config):
-        data_path = f'{PATHS["root"]}/data/mnli/multinli_1.0/'
+        dataset_path = f'{PATHS["root"]}/data/mnli'
+        data_path = dataset_path+'/multinli_1.0/'
+        if not os.path.exists(dataset_path):
+            os.system('wget https://cims.nyu.edu/~sbowman/multinli/multinli_1.0.zip -P '+dataset_path)
+            os.system('unzip '+f'{dataset_config["root"]}/data/mnli/multinli_1.0.zip')
         maxInt = sys.maxsize
         #From stackoverflow
         while True:
