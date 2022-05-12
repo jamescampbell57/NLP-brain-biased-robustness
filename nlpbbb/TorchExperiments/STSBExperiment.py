@@ -11,6 +11,9 @@ import torch.nn.functional as F
 # nlpbbb imports
 import nlpbbb as bbb
 
+import csv
+from nlpbbb.paths import PATHS
+
 class Experiment():
     
     def __init__(self, config):
@@ -61,9 +64,13 @@ class Experiment():
 class STSBDataset(Dataset):
     def __init__(self, ds, dataset_config):
         import csv
-        data_path = '/home/ubuntu/NLP-brain-biased-robustness/data/stsb/stsbenchmark/'
-
-        #wget https://data.deepai.org/Stsbenchmark.zip
+        data_path = f'{PATHS["root"]}/data/stsb/stsbenchmark'
+        if not os.path.exists(data_path):
+            dataset_path = f'{PATHS["root"]}/data/stsb'
+            os.system('mkdir '+dataset_path)
+            os.system('wget https://data.deepai.org/Stsbenchmark.zip -P '+dataset_path)
+            os.system(f'unzip {PATHS["root"]}/data/stsb/Stsbenchmark.zip -d {PATHS["root"]}/data/stsb/')
+        
 
         def read_csv(csv_file):
             file = open(csv_file)
@@ -75,9 +82,9 @@ class STSBDataset(Dataset):
             file.close()
             return rows
         
-        train_set = read_csv(data_path+'sts-train.csv')
-        dev_set = read_csv(data_path+'sts-dev.csv')
-        test_set = read_csv(data_path+'sts-test.csv')
+        train_set = read_csv(os.path.join(data_path,'sts-train.csv'))
+        dev_set = read_csv(os.path.join(data_path,'sts-dev.csv'))
+        test_set = read_csv(os.path.join(data_path,'sts-test.csv'))
         
         def split_data():
             headlines = []
@@ -125,6 +132,7 @@ class STSBDataset(Dataset):
         else:
             raise ValueError
             
+        #To be clear, the data is not actually tokenized yet
         
     def __getitem__(self, idx):
         return self.tokenized_data[idx]

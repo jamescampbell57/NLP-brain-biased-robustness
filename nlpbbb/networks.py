@@ -51,10 +51,10 @@ class SST2BERT(nn.Module):
         super().__init__()
         #self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased') 
         self.bert = BertModel.from_pretrained('bert-base-cased')
-        state_path = '/home/ubuntu/NLP-brain-biased-robustness/notebooks/fine_tuned_model'
-        pre_odict = torch.load(state_path)
-        filtered_odict = change_all_keys(pre_odict)
-        self.bert.load_state_dict(filtered_odict, strict=True)
+        #state_path = '/home/ubuntu/NLP-brain-biased-robustness/notebooks/fine_tuned_model'
+        #pre_odict = torch.load(state_path)
+        #filtered_odict = change_all_keys(pre_odict)
+        #self.bert.load_state_dict(filtered_odict, strict=True)
         self.linear = nn.Linear(768,num_out)
         self.return_CLS_representation = return_CLS_representation
         self.sigmoid_bool = sigmoid

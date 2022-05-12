@@ -1,7 +1,3 @@
-# hf imports
-from datasets import load_dataset
-from transformers import AutoTokenizer
-
 # torch imports
 import torch
 from torch.utils.data import Dataset
@@ -24,7 +20,7 @@ class Experiment():
         self.train_datasets = [YelpDataset(ds, config["dataset"]) for ds in config["dataset"]["train_datasets"]]
         self.val_datasets = [YelpDataset(ds, config["dataset"]) for ds in config["dataset"]["val_datasets"]]
         
-        # handels two cases: you want to validate internally or using another experiment object
+        # handles two cases: you want to validate internally or using another experiment object
         if len(self.train_datasets) == 1 and len(self.val_datasets) == 0:
             total_dset_size = len(self.train_datasets[0])
             train_size = int(0.8 * total_dset_size)
@@ -63,65 +59,76 @@ class Experiment():
 class YelpDataset(Dataset):
     def __init__(self, ds, dataset_config):
         data_path = f'{PATHS["root"]}/data/yelp'
-        f1 = open(os.path.join(data_path,'yelp_academic_dataset_business.json')) #150346
-        f2 = open(os.path.join(data_path,'yelp_academic_dataset_review.json')) #6990280
-
-        business = []
-        for line in f1:
-            business.append(json.loads(line))
-
-        review = []
-        for line in f2:
-            review.append(json.loads(line))
-
-        f1.close()
-        f2.close()
         
-        american_business_ids = []
-        japanese_business_ids = []
-        chinese_business_ids = []
-        italian_business_ids = []
-
-        for example in business:
-            if (not example['categories'] is None) and 'American' in example['categories']:
-                american_business_ids.append(example['business_id'])
-            if (not example['categories'] is None) and 'Japanese' in example['categories']:
-                japanese_business_ids.append(example['business_id'])
-            if (not example['categories'] is None) and 'Chinese' in example['categories']:
-                chinese_business_ids.append(example['business_id'])
-            if (not example['categories'] is None) and 'Italian' in example['categories']:
-                italian_business_ids.append(example['business_id'])
+        if not os.path.exists(data_path):
+            os.system('pip install kaggle')
+            os.system('mkdir '+data_path)
+            
+        #manually install:
+        #https://www.kaggle.com/datasets/yelp-dataset/yelp-dataset/download
+        #kaggle datasets download
         
-        import time
+        
+        if not os.path.exists(os.path.join(data_path, italian.json)):
+            f1 = open(os.path.join(data_path,'yelp_academic_dataset_business.json')) #150346
+            f2 = open(os.path.join(data_path,'yelp_academic_dataset_review.json')) #6990280
 
-        american = []
-        japanese = []
-        chinese = []
-        italian = []
+            business = []
+            for line in f1:
+                business.append(json.loads(line))
 
-        start = time.time()
+            review = []
+            for line in f2:
+                review.append(json.loads(line))
 
-        for idx, example in enumerate(review):
-            if example['business_id'] in american_business_ids:
-                american.append(example)
-            if example['business_id'] in japanese_business_ids:
-                japanese.append(example)
-            if example['business_id'] in chinese_business_ids:
-                chinese.append(example)
-            if example['business_id'] in italian_business_ids:
-                italian.append(example)
-            if idx%250000 == 0:
-                print("Hello")
+            f1.close()
+            f2.close()
+
+            american_business_ids = []
+            japanese_business_ids = []
+            chinese_business_ids = []
+            italian_business_ids = []
+
+            for example in business:
+                if (not example['categories'] is None) and 'American' in example['categories']:
+                    american_business_ids.append(example['business_id'])
+                if (not example['categories'] is None) and 'Japanese' in example['categories']:
+                    japanese_business_ids.append(example['business_id'])
+                if (not example['categories'] is None) and 'Chinese' in example['categories']:
+                    chinese_business_ids.append(example['business_id'])
+                if (not example['categories'] is None) and 'Italian' in example['categories']:
+                    italian_business_ids.append(example['business_id'])
+
+            import time
+
+            american = []
+            japanese = []
+            chinese = []
+            italian = []
+
+            start = time.time()
+
+            for idx, example in enumerate(review):
+                if example['business_id'] in american_business_ids:
+                    american.append(example)
+                if example['business_id'] in japanese_business_ids:
+                    japanese.append(example)
+                if example['business_id'] in chinese_business_ids:
+                    chinese.append(example)
+                if example['business_id'] in italian_business_ids:
+                    italian.append(example)
+                if idx%250000 == 0:
+                    print("Hello (28 total)")
 
 
-        with open('american.json', 'w') as f3:
-            json.dump(american, f3)
-        with open('japanese.json', 'w') as f4:
-            json.dump(japanese, f4)
-        with open('chinese.json', 'w') as f5:
-            json.dump(chinese, f5)
-        with open('italian.json', 'w') as f6:
-            json.dump(italian, f6)
+            with open('american.json', 'w') as f3:
+                json.dump(american, f3)
+            with open('japanese.json', 'w') as f4:
+                json.dump(japanese, f4)
+            with open('chinese.json', 'w') as f5:
+                json.dump(chinese, f5)
+            with open('italian.json', 'w') as f6:
+                json.dump(italian, f6)
             
         import json
         data_path = '/home/ubuntu/NLP-brain-biased-robustness/data/yelp/'
