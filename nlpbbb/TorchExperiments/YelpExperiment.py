@@ -83,7 +83,7 @@ class YelpDataset(Dataset):
         #forum: https://www.kaggle.com/general/6604
         
         
-        if not os.path.exists(os.path.join(data_path, italian.json)):
+        if not os.path.exists(os.path.join(data_path, 'italian.json')):
             f1 = open(os.path.join(data_path,'yelp_academic_dataset_business.json')) #150346
             f2 = open(os.path.join(data_path,'yelp_academic_dataset_review.json')) #6990280
 
