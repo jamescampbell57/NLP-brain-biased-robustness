@@ -28,7 +28,7 @@ class Experiment():
         self.val_loaders = []
         # handels two cases: you want to validate internally or using another experiment object
         for index, ds in enumerate(self.val_datasets):
-            if config["dataset"]["train_datasets"][0] == config["dataset"]["val_datasets"]:
+            if config["dataset"]["train_datasets"][0] == config["dataset"]["val_datasets"][index]:
                 
         #if len(self.train_datasets) == 1 and len(self.val_datasets) == 0:
                 total_dset_size = len(self.train_datasets[0])
