@@ -1,12 +1,12 @@
 import os
 
-os.system('pip install torch')
-os.system('pip install wandb')
-os.system('pip install argparse')
-os.system('pip install DateTime')
-os.system('pip install numpy')
-os.system('pip install pyyaml')
-
+#os.system('pip install torch')
+#os.system('pip install wandb')
+#os.system('pip install argparse')
+#os.system('pip install DateTime')
+#os.system('pip install numpy')
+#os.system('pip install pyyaml')
+#os.system('pip install submitit')
 
 # Claims imports
 import nlpbbb as bbb
