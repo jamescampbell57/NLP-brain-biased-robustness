@@ -49,14 +49,14 @@ class Experiment():
         return bbb.networks.MNLIBert(model_config)
         
     def train_forward_pass(self, batch, loss_fn, device):
-        pred = model(batch['sentence_1'], batch['sentence_2'])
+        pred = self.model(batch['sentence_1'], batch['sentence_2'])
         targets = torch.stack(tuple(batch['labels'])).to(device)
         targets = torch.transpose(targets, 0, 1)
         loss = loss_fn(pred, targets.float())
         return loss
     
     def val_forward_pass(self, batch, device):
-        pred = model(batch['sentence_1'], batch['sentence_2'])
+        pred = self.model(batch['sentence_1'], batch['sentence_2'])
         pred = torch.argmax(pred, axis=1)
         targets = torch.stack(tuple(batch['labels'])).to(device)
         targets = torch.transpose(targets, 0, 1)
