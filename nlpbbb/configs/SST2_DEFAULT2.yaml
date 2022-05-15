@@ -2,7 +2,7 @@
 experiment:
     name: "train on sst2"
     experiment_type: "SST2"
-    epochs: 20
+    epochs: 1
     val_frequency: 1
     batchsize: 8
     model_and_task: "BERT sst2-imdb"
@@ -20,5 +20,5 @@ model:
 loss: 
     name: 
 misc:
-    save: True
+    save: False
 

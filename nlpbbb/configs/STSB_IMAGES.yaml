@@ -2,7 +2,7 @@
 experiment:
     name: "Train on images"
     experiment_type: "STSB"
-    epochs: 20
+    epochs: 1
     val_frequency: 2
     batchsize: 8
     model_and_task: "BERT stsb"
@@ -20,5 +20,5 @@ model:
 loss: 
     name: 
 misc:
-    save: True
+    save: False
 

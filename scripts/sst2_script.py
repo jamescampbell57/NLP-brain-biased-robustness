@@ -1,10 +1,11 @@
 import os
 
-os.system('chmod +x install_relevant_packages.sh')
-os.system('./install_relevant_packages.sh')
+#os.system('chmod +x install_relevant_packages.sh')
+#os.system('./install_relevant_packages.sh')
 
 # Claims imports
 import nlpbbb as bbb
+from nlpbbb.paths import PATHS
 
 # torch imports
 import torch
@@ -19,7 +20,7 @@ import yaml
 import sys
 
 if __name__ == "__main__":
-    root = "/home/ubuntu/nlp-brain-biased-robustness"
+    root = PATHS["root"]
     
     with open(f"{root}/nlpbbb/configs/SST2_DEFAULT1.yaml", 'r') as stream:
         config = yaml.safe_load(stream)

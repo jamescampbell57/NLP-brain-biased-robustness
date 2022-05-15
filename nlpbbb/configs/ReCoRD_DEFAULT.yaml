@@ -19,5 +19,5 @@ model:
 loss: 
     name: 
 misc:
-    save: True
+    save: False
 
