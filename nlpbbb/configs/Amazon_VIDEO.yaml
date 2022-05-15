@@ -3,7 +3,7 @@ experiment:
     name: "train on Video"
     experiment_type: "Amazon"
     epochs: 20
-    val_frequency: 1
+    val_frequency: 2
     batchsize: 8
     model_and_task: "BERT Amazon"
 dataset:
