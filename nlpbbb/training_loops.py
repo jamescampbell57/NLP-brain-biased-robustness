@@ -87,5 +87,5 @@ def val_loop(train_config, exp, epoch, dataloader, device):
                 total_num_correct += num_correct
                 total_num_samples += num_samples
             pbar.update(train_config["batchsize"])
-    return float(num_correct)/float(num_samples)*100 
+    return float(total_num_correct)/float(total_num_samples)*100 
     
