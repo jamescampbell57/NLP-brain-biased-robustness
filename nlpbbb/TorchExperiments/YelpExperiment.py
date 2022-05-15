@@ -34,7 +34,7 @@ class Experiment():
         
         self.val_loaders = []
         for index, ds in enumerate(self.val_datasets):
-            if config["dataset"]["train_datasets"][0] == config["dataset"]["val_datasets"]:
+            if config["dataset"]["train_datasets"][0] == config["dataset"]["val_datasets"][index]:
                 total_dset_size = len(self.train_datasets[0])
                 train_size = int(0.8 * total_dset_size)
                 test_size = total_dset_size - train_size
