@@ -1,17 +1,18 @@
 ---
 experiment:
-    name: "default"
+    name: "train on sst2"
     experiment_type: "SST2"
-    epochs: 2
-    val_frequency: 3
+    epochs: 20
+    val_frequency: 1
     batchsize: 8
+    model_and_task: "BERT sst2-imdb"
 dataset:
-    train_datasets: ["imdb"]
-    val_datasets: ["imdb"]
+    train_datasets: ["sst2"]
+    val_datasets: ["imdb", "sst2"]
     limit: 1000
     seed: 42
 model:
-    num_out: 5
+    num_out: 1
     sigmoid: False
     return_CLS_rep: False
     #added type

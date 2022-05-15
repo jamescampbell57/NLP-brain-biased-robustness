@@ -1,17 +1,16 @@
 ---
 experiment:
-    name: "default"
+    name: "Train on telephone"
     experiment_type: "MNLI"
-    epochs: 2
-    val_frequency: 3
+    epochs: 20
+    val_frequency: 1
     batchsize: 8
+    model_and_task: "BERT MNLI"
 dataset:
-    train_datasets: ["train_set"]
-    val_datasets: []
-    limit: 1000
+    train_datasets: ["telephone"]
+    val_datasets: ["telephone","letters","facetoface"]
     seed: 42
 model:
-    num_out: 5
     sigmoid: False
     return_CLS_rep: False
     #added type
@@ -20,4 +19,3 @@ loss:
     name: 
 misc:
     save: True
-

@@ -72,7 +72,7 @@ class SST2Datset(Dataset):
         tokenized_dset = tokenized_dset.remove_columns(removed_fields)        
         tokenized_dset = tokenized_dset.rename_column("label", "labels")
         tokenized_dset.set_format("torch")
-        self.tokenized_data = tokenized_dset[split].shuffle(seed=dataset_config["seed"]).select(range(dataset_config["limit"]))
+        self.tokenized_data = tokenized_dset[split].shuffle(seed=dataset_config["seed"])#.select(range(dataset_config["limit"]))
         
     def __getitem__(self, idx):
         return self.tokenized_data[idx]

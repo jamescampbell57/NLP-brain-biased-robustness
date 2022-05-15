@@ -21,16 +21,29 @@ class Experiment():
         self.val_datasets = [YelpDataset(ds, config["dataset"]) for ds in config["dataset"]["val_datasets"]]
         
         # handles two cases: you want to validate internally or using another experiment object
-        if len(self.train_datasets) == 1 and len(self.val_datasets) == 0:
-            total_dset_size = len(self.train_datasets[0])
-            train_size = int(0.8 * total_dset_size)
-            test_size = total_dset_size - train_size
-            training_data, test_data = torch.utils.data.random_split(self.train_datasets[0], [train_size, test_size])
-            self.train_loaders = [DataLoader(training_data, batch_size=config["experiment"]["batchsize"], shuffle=True)]
-            self.val_loaders = [DataLoader(test_data, batch_size=config["experiment"]["batchsize"], shuffle=False)]
-        else:
-            self.train_loaders = [DataLoader(ds, batch_size=config["experiment"]["batchsize"], shuffle=True) for ds in self.train_datasets]
-            self.val_loaders = [DataLoader(ds, batch_size=config["experiment"]["batchsize"], shuffle=False) for ds in self.val_datasets]
+        #if len(self.train_datasets) == 1 and len(self.val_datasets) == 0:
+        #    total_dset_size = len(self.train_datasets[0])
+        #    train_size = int(0.8 * total_dset_size)
+        #    test_size = total_dset_size - train_size
+        #    training_data, test_data = torch.utils.data.random_split(self.train_datasets[0], [train_size, test_size])
+        #    self.train_loaders = [DataLoader(training_data, batch_size=config["experiment"]["batchsize"], shuffle=True)]
+        #    self.val_loaders = [DataLoader(test_data, batch_size=config["experiment"]["batchsize"], shuffle=False)]
+        #else:
+        #    self.train_loaders = [DataLoader(ds, batch_size=config["experiment"]["batchsize"], shuffle=True) for ds in self.train_datasets]
+        #    self.val_loaders = [DataLoader(ds, batch_size=config["experiment"]["batchsize"], shuffle=False) for ds in self.val_datasets]
+        
+        self.val_loaders = []
+        for index, ds in enumerate(self.val_datasets):
+            if config["dataset"]["train_datasets"][0] == config["dataset"]["val_datasets"]:
+                total_dset_size = len(self.train_datasets[0])
+                train_size = int(0.8 * total_dset_size)
+                test_size = total_dset_size - train_size
+                training_data, test_data = torch.utils.data.random_split(self.train_datasets[0], [train_size, test_size])
+                self.train_loaders = [DataLoader(training_data, batch_size=config["experiment"]["batchsize"], shuffle=True)]
+                self.val_loaders.append(DataLoader(test_data, batch_size=config["experiment"]["batchsize"], shuffle=False))
+            else:
+                self.val_loaders.append(DataLoader(ds, batch_size=config["experiment"]["batchsize"], shuffle=False))
+        
         
         # really you only want to build a model for an experiment object if it is the train experiment
         self.model = self.get_model(config["model"])
@@ -67,6 +80,7 @@ class YelpDataset(Dataset):
         #manually install:
         #https://www.kaggle.com/datasets/yelp-dataset/yelp-dataset/download
         #kaggle datasets download
+        #forum: https://www.kaggle.com/general/6604
         
         
         if not os.path.exists(os.path.join(data_path, italian.json)):
@@ -179,6 +193,15 @@ class YelpDataset(Dataset):
         nc = []
         for i in chinese:
             nc.append({'text': i['text'], 'labels': F.one_hot((torch.tensor(i['stars']-1)).to(torch.int64), num_classes=5)})
+            
+        if ds == "american":
+            self.tokenized_data = na
+        if ds == "italian":
+            self.tokenized_data = ni
+        if ds == "japanese":
+            self.tokenized_data = nj
+        if ds == "chinese":
+            self.tokenized_data = nc
         
     def __getitem__(self, idx):
         return self.tokenized_data[idx]

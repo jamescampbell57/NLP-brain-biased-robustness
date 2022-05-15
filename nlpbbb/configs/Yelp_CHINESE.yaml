@@ -1,0 +1,24 @@
+---
+experiment:
+    name: "Train on chinese"
+    experiment_type: "Yelp"
+    epochs: 20
+    val_frequency: 2
+    batchsize: 8
+    model_and_task: "BERT Yelp"
+dataset:
+    train_datasets: ["chinese"]
+    val_datasets: ["american","italian","japanese","chinese"]
+    limit: 1000
+    seed: 42
+model:
+    num_out: 5
+    sigmoid: False
+    return_CLS_rep: False
+    #added type
+    type: 'BERT'
+loss: 
+    name: 
+misc:
+    save: True
+

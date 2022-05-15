@@ -1,0 +1,24 @@
+---
+experiment:
+    name: "train on imdb"
+    experiment_type: "SST2"
+    epochs: 20
+    val_frequency: 1
+    batchsize: 8
+    model_and_task: "BERT sst2-imdb"
+dataset:
+    train_datasets: ["imdb"]
+    val_datasets: ["imdb", "sst2"]
+    limit: 1000
+    seed: 42
+model:
+    num_out: 1
+    sigmoid: False
+    return_CLS_rep: False
+    #added type
+    type: 'BERT'
+loss: 
+    name: 
+misc:
+    save: True
+

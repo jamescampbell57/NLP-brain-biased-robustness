@@ -21,16 +21,28 @@ class Experiment():
         self.val_datasets = [STSBDataset(ds, config["dataset"]) for ds in config["dataset"]["val_datasets"]]
         
         # handels two cases: you want to validate internally or using another experiment object
-        if len(self.train_datasets) == 1 and len(self.val_datasets) == 0:
-            total_dset_size = len(self.train_datasets[0])
-            train_size = int(0.8 * total_dset_size)
-            test_size = total_dset_size - train_size
-            training_data, test_data = torch.utils.data.random_split(self.train_datasets[0], [train_size, test_size])
-            self.train_loaders = [DataLoader(training_data, batch_size=config["experiment"]["batchsize"], shuffle=True)]
-            self.val_loaders = [DataLoader(test_data, batch_size=config["experiment"]["batchsize"], shuffle=False)]
-        else:
-            self.train_loaders = [DataLoader(ds, batch_size=config["experiment"]["batchsize"], shuffle=True) for ds in self.train_datasets]
-            self.val_loaders = [DataLoader(ds, batch_size=config["experiment"]["batchsize"], shuffle=False) for ds in self.val_datasets]
+        #if len(self.train_datasets) == 1 and len(self.val_datasets) == 0:
+        #    total_dset_size = len(self.train_datasets[0])
+        #    train_size = int(0.8 * total_dset_size)
+        #    test_size = total_dset_size - train_size
+        #    training_data, test_data = torch.utils.data.random_split(self.train_datasets[0], [train_size, test_size])
+        #    self.train_loaders = [DataLoader(training_data, batch_size=config["experiment"]["batchsize"], shuffle=True)]
+        #    self.val_loaders = [DataLoader(test_data, batch_size=config["experiment"]["batchsize"], shuffle=False)]
+        #else:
+        #    self.train_loaders = [DataLoader(ds, batch_size=config["experiment"]["batchsize"], shuffle=True) for ds in self.train_datasets]
+        #    self.val_loaders = [DataLoader(ds, batch_size=config["experiment"]["batchsize"], shuffle=False) for ds in self.val_datasets]
+        
+        self.val_loaders = []
+        for index, ds in enumerate(self.val_datasets):
+            if config["dataset"]["train_datasets"][0] == config["dataset"]["val_datasets"]:
+                total_dset_size = len(self.train_datasets[0])
+                train_size = int(0.8 * total_dset_size)
+                test_size = total_dset_size - train_size
+                training_data, test_data = torch.utils.data.random_split(self.train_datasets[0], [train_size, test_size])
+                self.train_loaders = [DataLoader(training_data, batch_size=config["experiment"]["batchsize"], shuffle=True)]
+                self.val_loaders.append(DataLoader(test_data, batch_size=config["experiment"]["batchsize"], shuffle=False))
+            else:
+                self.val_loaders.append(DataLoader(ds, batch_size=config["experiment"]["batchsize"], shuffle=False))
         
         # really you only want to build a model for an experiment object if it is the train experiment
         self.model = self.get_model(config["model"])
@@ -53,7 +65,7 @@ class Experiment():
         
         vec_1 = model(batch['sentence_1'])
         vec_2 = model(batch['sentence_2'])
-        cosine_similarity = cos(vec_1, vec_2)
+        cosine_similarity = self.cos(vec_1, vec_2)
         golds = batch['labels'].float()
         for idx, similarity in enumerate(cosine_similarity):
             cosine_similarities.append(similarity)

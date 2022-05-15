@@ -1,12 +1,7 @@
 import os
 
-os.system('pip install torch')
-os.system('pip install wandb')
-os.system('pip install argparse')
-os.system('pip install DateTime')
-os.system('pip install numpy')
-os.system('pip install pyyaml')
-
+os.system('chmod +x install_relevant_packages.sh')
+os.system('./install_relevant_packages.sh')
 
 # Claims imports
 import nlpbbb as bbb
@@ -24,14 +19,10 @@ import yaml
 import sys
 
 if __name__ == "__main__":
-    root = "/home/ubuntu/NLP-brain-biased-robustness"
+    root = "/home/ubuntu/nlp-brain-biased-robustness"
+    
     with open(f"{root}/nlpbbb/configs/Amazon_BABY.yaml", 'r') as stream:
         config = yaml.safe_load(stream)
-    #if len(sys.argv) > 1:
-    #    new_config = f"{root}/nlpbbb/configs/{sys.argv[1]}.yaml"
-    #    with open(new_config, 'r') as stream:
-    #        new_config = yaml.safe_load(stream)
-    #    config = bbb.setup.merge_dicts(config, new_config)
     bbb.training_loops.run_training_config(config)
     
     with open(f"{root}/nlpbbb/configs/Amazon_MUSIC.yaml", 'r') as stream:

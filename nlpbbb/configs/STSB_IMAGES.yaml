@@ -1,13 +1,14 @@
 ---
 experiment:
-    name: "default"
+    name: "Train on images"
     experiment_type: "STSB"
-    epochs: 2
-    val_frequency: 3
+    epochs: 20
+    val_frequency: 2
     batchsize: 8
+    model_and_task: "BERT stsb"
 dataset:
-    train_datasets: ["Baby_v1_00"]
-    val_datasets: []
+    train_datasets: ["MSRpar"]
+    val_datasets: ["MSRpar","MSRvid","headlines","images"]
     limit: 1000
     seed: 42
 model:
