@@ -14,10 +14,10 @@ import nlpbbb as bbb
 class Experiment():
     
     def __init__(self, config):
-        self.train_datasets = [AmazonDataset(ds, config["dataset"]) for ds in config["dataset"]["train_datasets"]]
-        self.val_datasets = [AmazonDataset(ds, config["dataset"]) for ds in config["dataset"]["val_datasets"]]
+        self.train_datasets = [AmazonDataset(ds, config["dataset"], val=False) for ds in config["dataset"]["train_datasets"]]
+        self.val_datasets = [AmazonDataset(ds, config["dataset"], val=True) for ds in config["dataset"]["val_datasets"]]
         
-        # handels two cases: you want to validate internally or using another experiment object
+        # handles two cases: you want to validate internally or using another experiment object (dont do this)
         if len(self.train_datasets) == 1 and len(self.val_datasets) == 0:
             total_dset_size = len(self.train_datasets[0])
             train_size = int(0.8 * total_dset_size)
@@ -53,11 +53,17 @@ class Experiment():
         return num_correct, num_samples
           
 class AmazonDataset(Dataset):
-    def __init__(self, ds, dataset_config):
+    def __init__(self, ds, dataset_config, val):
         amazon_large = load_dataset('amazon_us_reviews', ds)
-        amazon_small = amazon_large['train'].shuffle(seed=dataset_config["seed"]).select(range(dataset_config["limit"]))
+        
+        if val:
+            amazon_small = amazon_large['train'].select(range(200000)).shuffle(seed=dataset_config["seed"]).select(range(dataset_config["val_limit"]))
+            
+        if not val:
+            amazon_small = amazon_large['train'].select(range(200000, len(amazon_large['train']))).shuffle(seed=dataset_config["seed"]).select(range(dataset_config["train_limit"]))
+            
         tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
-
+        
         #tokenize function
         def tokenize_data(examples):
             return tokenizer(examples['review_body'], padding="max_length", truncation=True)

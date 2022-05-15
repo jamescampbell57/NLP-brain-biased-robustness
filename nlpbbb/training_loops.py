@@ -20,7 +20,7 @@ def run_training_config(config):
     #First define an experiment object
     if config["misc"]["save"]:
         assert not (config["experiment"]["name"] is None), "Must have a name for the run."
-        wandb.init(project="BrainFinetuning", entity="nlp-brain-biased-robustness")
+        wandb.init(project=config["experiment"]["model_and_task"], entity="nlp-brain-biased-robustness")
         wandb.run.name = config["experiment"]["name"]
     
     exp = bbb.setup.get_experiment(config)
@@ -41,16 +41,20 @@ def run_training_config(config):
     for epoch in range(num_epochs):
         #Run validation every so often, good to do before training
         if epoch % config["experiment"]["val_frequency"] == 0:
-            val_loss = val_loop(config["experiment"], exp, epoch, exp.val_loaders, device)
+            val_losses = []
+            for val_loader in exp.val_loaders:
+                val_loss = val_loop(config["experiment"], exp, epoch, val_loader, device)
+                val_losses.append(val_loss)
             
         train_loss = train_loop(config["experiment"], exp, epoch, exp.train_loaders, optimizer, lr_scheduler, loss_fn, device)
         
         #save whenever you validate
         if epoch % config["experiment"]["val_frequency"] == 0:
             if config["misc"]["save"]:
-                wandb.log({"train_loss": train_loss,
-                           "val_loss": val_loss})
-                bbb.utils.save_model(exp, optimizer, val_loss, config, date, epoch)
+                wandb.log({"train_loss": train_loss})
+                for i, val_name in enumerate(config["dataset"]["val_datasets"]):
+                    wandb.log({val_name: val_losses[i]})
+                #bbb.utils.save_model(exp, optimizer, val_loss, config, date, epoch)
 
         
 def train_loop(train_config, exp, epoch, dataloaders, optimizer, lr_scheduler, loss_fn, device):
@@ -62,6 +66,7 @@ def train_loop(train_config, exp, epoch, dataloaders, optimizer, lr_scheduler, l
         with tqdm(total=len(dataloader) * train_config["batchsize"], desc=f'Training Epoch {epoch + 1}/{train_config["epochs"]}', unit='batch') as pbar:
             for batch in dataloader: #tryin unpacking text from 'labels' as in model development
                 loss = exp.train_forward_pass(batch, loss_fn, device)
+                wandb.log({"running loss": loss})
                 total_loss += loss.item()
                 loss.backward()
                 optimizer.step()
@@ -71,17 +76,16 @@ def train_loop(train_config, exp, epoch, dataloaders, optimizer, lr_scheduler, l
     return total_loss/num_iters
             
             
-def val_loop(train_config, exp, epoch, dataloaders, device):
+def val_loop(train_config, exp, epoch, dataloader, device):
     exp.model.eval()
     total_num_correct = 0
     total_num_samples = 0
-    for dataloader in dataloaders:
-        with tqdm(total=len(dataloader) * train_config["batchsize"], desc=f'Validation Epoch {epoch + 1}/{train_config["epochs"]}', unit='batch') as pbar:
-            for batch in dataloader:
-                with torch.no_grad():
-                    num_correct, num_samples = exp.val_forward_pass(batch, device)
-                    total_num_correct += num_correct
-                    total_num_samples += num_samples
-                pbar.update(train_config["batchsize"])
-    return float(num_correct)/float(num_samples)*100 
+    with tqdm(total=len(dataloader) * train_config["batchsize"], desc=f'Validation Epoch {epoch + 1}/{train_config["epochs"]}', unit='batch') as pbar:
+        for batch in dataloader:
+            with torch.no_grad():
+                num_correct, num_samples = exp.val_forward_pass(batch, device)
+                total_num_correct += num_correct
+                total_num_samples += num_samples
+            pbar.update(train_config["batchsize"])
+return float(num_correct)/float(num_samples)*100 
     
