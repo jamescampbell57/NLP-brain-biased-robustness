@@ -49,7 +49,7 @@ def run_training_config(config):
                 wandb.log({"train_loss": train_loss})
                 for i, val_name in enumerate(config["dataset"]["val_datasets"]):
                     wandb.log({val_name: val_losses[i]})
-                bbb.utils.save_model(exp, optimizer, np.mean(val_losses), config, date, epoch)
+                bbb.utils.save_model(exp, np.mean(val_losses), config, date, epoch)
 
         
 def train_loop(train_config, exp, epoch, device):

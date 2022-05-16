@@ -1,11 +1,12 @@
 ---
 experiment:
-    name: "HarryPotter finetune"
+    name: "HarryPotter-finetune"
     experiment_type: "HarryPotter"
-    epochs: 1
-    val_frequency: 2
+    epochs: 20
+    val_frequency: 5
     batchsize: 8
-    model_and_task: "BrainBiasedBert HarryPotter"
+    model_and_task: "BrainBiasedBert-HarryPotter"
+    lr: 0.00005
 dataset:
     seed: 42
     subjects: ["1"]
@@ -13,7 +14,7 @@ model:
     num_out: 5
     sigmoid: False
     return_CLS_rep: False
-    type: 'BrainBiasedBert'
+    type: "BrainBiasedBert"
 loss: 
     name: "MSE"
 misc:
