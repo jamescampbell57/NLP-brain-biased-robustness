@@ -61,7 +61,7 @@ def gen_training_name(run_dict, params):
                 names.append(f"{sk}:{run_dict[key][sk]}")
     return_name = f'model_type:{run_dict["model"]["type"]}'
     for field in names:
-        return_name += f"/{field}"
+        return_name += f"${field}"
     return return_name
 
 def create_gridsearch(params, default_name=None, merge_default=False):

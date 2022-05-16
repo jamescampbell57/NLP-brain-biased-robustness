@@ -9,6 +9,7 @@ import nlpbbb as bbb
 from tqdm import tqdm
 import wandb
 from datetime import date as dt
+import numpy as np
 
 
 def run_training_config(config):
@@ -38,8 +39,11 @@ def run_training_config(config):
         #Run validation every so often, good to do before training
         if epoch % config["experiment"]["val_frequency"] == 0:
             val_losses = []
-            for val_loader in exp.val_loaders:
-                val_losses.append(val_loop(config["experiment"], exp, epoch, val_loader, device))
+            if config["experiment"]["experiment_type"] == "HarryPotter":
+                val_losses.append(val_loop(config["experiment"], exp, epoch, exp.val_loaders[0], device))
+            else:
+                for val_loader in exp.val_loaders:
+                    val_losses.append(val_loop(config["experiment"], exp, epoch, val_loader, device))
             
         train_loss = train_loop(config["experiment"], exp, epoch, device)
         
@@ -47,8 +51,11 @@ def run_training_config(config):
         if epoch % config["experiment"]["val_frequency"] == 0:
             if config["misc"]["save"]:
                 wandb.log({"train_loss": train_loss})
-                for i, val_name in enumerate(config["dataset"]["val_datasets"]):
-                    wandb.log({val_name: val_losses[i]})
+                if config["experiment"]["experiment_type"] == "HarryPotter":
+                    wandb.log({"val_loss": val_losses[0]})
+                else:
+                    for i, val_name in enumerate(config["dataset"]["val_datasets"]):
+                        wandb.log({val_name: val_losses[i]})
                 bbb.utils.save_model(exp, np.mean(val_losses), config, date, epoch)
 
         
