@@ -1,6 +1,7 @@
 # hf imports
 from datasets import load_dataset
 from transformers import AutoTokenizer
+from transformers import get_scheduler
 
 # torch imports
 import torch
@@ -29,21 +30,27 @@ class Experiment():
         
         # really you only want to build a model for an experiment object if it is the train experiment
         self.model = self.get_model()
+        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=5e-5)
+        num_iters = sum([len(dl) for dl in self.train_loaders])
+        self.lr_scheduler = get_scheduler(name="linear", optimizer=self.optimizer, num_warmup_steps=0, num_training_steps=num_iters)
+        self.loss_function = torch.nn.MSELoss()
+        
                                            
     def get_model(self):
         return bbb.networks.BrainBiasedBERT()
         
-    def train_forward_pass(self, batch, loss_fn, device):
+    def train_forward_pass(self, batch, device):
         preds = self.model(list(batch[0]))
         labels = batch[1].to(device)
-        loss = loss_fn(preds, labels.float())
+        loss = self.loss_function(preds, labels.float())
         return loss
     
     def val_forward_pass(self, batch, device):
         preds = self.model(list(batch[0]))
         labels = batch[1].to(device)
-        test_loss = loss_function(preds, labels.float())
-        return test_loss, test_loss
+        test_loss = self.loss_function(preds, labels.float())
+        num_samples = preds.size(0)
+        return test_loss, num_samples
           
 class HarryPotterDataset(Dataset):
     def __init__(self, split, dataset_config):

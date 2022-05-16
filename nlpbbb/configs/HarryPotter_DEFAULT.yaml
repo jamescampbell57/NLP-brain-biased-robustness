@@ -8,7 +8,7 @@ experiment:
     model_and_task: "BrainBiasedBert HarryPotter"
 dataset:
     seed: 42
-    subjects: ["1", "2"]
+    subjects: ["1"]
 model:
     num_out: 5
     sigmoid: False
