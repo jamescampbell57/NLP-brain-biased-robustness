@@ -74,14 +74,34 @@ def train_loop(train_config, exp, epoch, device):
             
 def val_loop(train_config, exp, epoch, dataloader, device):
     exp.model.eval()
-    total_num_correct = 0
-    total_num_samples = 0
+    
+    #need some flexibility to accomodate STSB/Finetuning
+    primary_values = []
+    secondary_values = []
+    
     with tqdm(total=len(dataloader) * train_config["batchsize"], desc=f'Validation Epoch {epoch + 1}/{train_config["epochs"]}', unit='batch') as pbar:
         for batch in dataloader:
             with torch.no_grad():
-                num_correct, num_samples = exp.val_forward_pass(batch, device)
-                total_num_correct += num_correct
-                total_num_samples += num_samples
+                prim_val, seco_val = exp.val_forward_pass(batch, device)
+                if train_config["experiment_type"] == "STSB":
+                    for idx, similarity in enumerate(seco_val):
+                        primary_values.append(prim_val[idx])
+                        secondary_values.append(similarity)
+                else:
+                    primary_values.append(prim_val)
+                    secondary_values.append(seco_val)
             pbar.update(train_config["batchsize"])
-    return float(total_num_correct)/float(total_num_samples)*100 
+    
+    if train_config["experiment_type"] == "STSB":
+        torch_cosines = torch.tensor(primary_values)
+        torch_gold = torch.tensor(secondary_values)
+
+        torch_cosines = torch_cosines.reshape((1,torch_cosines.shape[0]))
+        torch_gold = torch_gold.reshape((1,torch_gold.shape[0]))
+
+        combined = torch.cat((torch_cosines, torch_gold), axis=0)
+
+        return torch.corrcoef(combined)[1,1]
+    else:
+        return float(sum(primary_values))/float(sum(secondary_values))*100 
     

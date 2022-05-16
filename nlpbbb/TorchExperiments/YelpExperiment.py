@@ -11,6 +11,7 @@ import nlpbbb as bbb
 import os
 import sys
 import csv
+import json
 
 from nlpbbb.paths import PATHS
 
@@ -66,16 +67,6 @@ class YelpDataset(Dataset):
     def __init__(self, ds, dataset_config):
         data_path = f'{PATHS["root"]}/data/yelp'
         
-        if not os.path.exists(data_path):
-            os.system('pip install kaggle')
-            os.system('mkdir '+data_path)
-            
-        #manually install:
-        #https://www.kaggle.com/datasets/yelp-dataset/yelp-dataset/download
-        #kaggle datasets download
-        #forum: https://www.kaggle.com/general/6604
-        
-        
         if not os.path.exists(os.path.join(data_path, 'italian.json')):
             f1 = open(os.path.join(data_path,'yelp_academic_dataset_business.json')) #150346
             f2 = open(os.path.join(data_path,'yelp_academic_dataset_review.json')) #6990280
@@ -106,14 +97,10 @@ class YelpDataset(Dataset):
                 if (not example['categories'] is None) and 'Italian' in example['categories']:
                     italian_business_ids.append(example['business_id'])
 
-            import time
-
             american = []
             japanese = []
             chinese = []
             italian = []
-
-            start = time.time()
 
             for idx, example in enumerate(review):
                 if example['business_id'] in american_business_ids:
@@ -124,9 +111,6 @@ class YelpDataset(Dataset):
                     chinese.append(example)
                 if example['business_id'] in italian_business_ids:
                     italian.append(example)
-                if idx%250000 == 0:
-                    print("Hello (28 total)")
-
 
             with open('american.json', 'w') as f3:
                 json.dump(american, f3)
@@ -137,64 +121,14 @@ class YelpDataset(Dataset):
             with open('italian.json', 'w') as f6:
                 json.dump(italian, f6)
             
-        import json
-        data_path = '/home/ubuntu/NLP-brain-biased-robustness/data/yelp/'
-        f1 = open(data_path+'american.json')
-        f2 = open(data_path+'italian.json')
-        f3 = open(data_path+'japanese.json')
-        f4 = open(data_path+'chinese.json')
-
-        american = []
-        for line in f1:
-            american.append(json.loads(line))
-
-        italian = []
-        for line in f2:
-            italian.append(json.loads(line))
-
-        japanese = []
-        for line in f3:
-            japanese.append(json.loads(line))
-
-        chinese = []
-        for line in f4:
-            chinese.append(json.loads(line))
-
-        f1.close()
-        f2.close()
-        f3.close()
-        f4.close()
-
-
-        american = american[0]
-        italian = italian[0]
-        japanese = japanese[0]
-        chinese = chinese[0]
-        
+        lang_file = open(os.path.join(data_path, f'{ds}.json'))
+        language = [json.loads(line) for line in lang_file] 
+        lang_file.close()
+        #language = language[0]
         na = []
-        for i in american:
+        for i in language:
             na.append({'text': i['text'], 'labels': F.one_hot((torch.tensor(i['stars']-1)).to(torch.int64), num_classes=5)})
-
-        ni = []
-        for i in italian:
-            ni.append({'text': i['text'], 'labels': F.one_hot((torch.tensor(i['stars']-1)).to(torch.int64), num_classes=5)})
-
-        nj = []
-        for i in japanese:
-            nj.append({'text': i['text'], 'labels': F.one_hot((torch.tensor(i['stars']-1)).to(torch.int64), num_classes=5)})
-
-        nc = []
-        for i in chinese:
-            nc.append({'text': i['text'], 'labels': F.one_hot((torch.tensor(i['stars']-1)).to(torch.int64), num_classes=5)})
-            
-        if ds == "american":
-            self.tokenized_data = na
-        if ds == "italian":
-            self.tokenized_data = ni
-        if ds == "japanese":
-            self.tokenized_data = nj
-        if ds == "chinese":
-            self.tokenized_data = nc
+        self.tokenized_data = na
         
     def __getitem__(self, idx):
         return self.tokenized_data[idx]
