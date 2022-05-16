@@ -2,9 +2,6 @@
 import torch
 import torch.nn.functional as F
 
-# hf imports
-from transformers import get_scheduler
-
 # nlpbbb imports
 import nlpbbb as bbb
 
@@ -23,30 +20,28 @@ def run_training_config(config):
         wandb.init(project=config["experiment"]["model_and_task"], entity="nlp-brain-biased-robustness")
         wandb.run.name = config["experiment"]["name"]
     
+    #setup your experiment
     exp = bbb.setup.get_experiment(config)
-    model = exp.model
     
-    num_epochs = config["experiment"]["epochs"]
-    #Then set your optimizer/scheduler
-    optimizer = torch.optim.AdamW(model.parameters(), lr=5e-5)
-    num_iters = sum([len(dl) for dl in exp.train_loaders])
-    lr_scheduler = get_scheduler(name="linear", optimizer=optimizer, num_warmup_steps=0, num_training_steps=num_epochs * num_iters)
+    #Then set your model/optimizer/scheduler
+    model = exp.model
+    optimizer = exp.optimizer
+    lr_scheduler = exp.lr_scheduler
     
     #Extra details
-    loss_fn = torch.nn.MSELoss()
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     model.to(device)
     
+    num_epochs = config["experiment"]["epochs"]
     #Training loops
     for epoch in range(num_epochs):
         #Run validation every so often, good to do before training
         if epoch % config["experiment"]["val_frequency"] == 0:
             val_losses = []
             for val_loader in exp.val_loaders:
-                val_loss = val_loop(config["experiment"], exp, epoch, val_loader, device)
-                val_losses.append(val_loss)
+                val_losses.append(val_loop(config["experiment"], exp, epoch, val_loader, device))
             
-        train_loss = train_loop(config["experiment"], exp, epoch, exp.train_loaders, optimizer, lr_scheduler, loss_fn, device)
+        train_loss = train_loop(config["experiment"], exp, epoch, device)
         
         #save whenever you validate
         if epoch % config["experiment"]["val_frequency"] == 0:
@@ -54,24 +49,25 @@ def run_training_config(config):
                 wandb.log({"train_loss": train_loss})
                 for i, val_name in enumerate(config["dataset"]["val_datasets"]):
                     wandb.log({val_name: val_losses[i]})
-                #bbb.utils.save_model(exp, optimizer, val_loss, config, date, epoch)
+                bbb.utils.save_model(exp, optimizer, np.mean(val_losses), config, date, epoch)
 
         
-def train_loop(train_config, exp, epoch, dataloaders, optimizer, lr_scheduler, loss_fn, device):
+def train_loop(train_config, exp, epoch, device):
     exp.model.train()
     #training loop
     total_loss = 0
-    num_iters = sum([len(dl) for dl in dataloaders])
-    for dataloader in dataloaders:
+    num_iters = sum([len(dl) for dl in exp.train_loaders])
+    for dataloader in exp.train_loaders:
         with tqdm(total=len(dataloader) * train_config["batchsize"], desc=f'Training Epoch {epoch + 1}/{train_config["epochs"]}', unit='batch') as pbar:
             for batch in dataloader: #tryin unpacking text from 'labels' as in model development
-                loss = exp.train_forward_pass(batch, loss_fn, device)
-                wandb.log({"running loss": loss})
+                loss = exp.train_forward_pass(batch, device)
+                # standard pytorch backprop
                 total_loss += loss.item()
                 loss.backward()
-                optimizer.step()
-                lr_scheduler.step()
-                optimizer.zero_grad()
+                exp.optimizer.step()
+                exp.lr_scheduler.step()
+                exp.optimizer.zero_grad()
+                
                 pbar.update(train_config["batchsize"])
     return total_loss/num_iters
             

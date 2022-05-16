@@ -1,7 +1,16 @@
-import torch
-import torch.nn as nn
+# hf imports
 from transformers import BertModel
 from transformers import AutoTokenizer
+
+# torch imports
+import torch
+import torch.nn as nn
+
+# bbb imports
+from nlpbbb.paths import PATHS
+
+# random imports
+import os
 
 class AmazonBERT(nn.Module):
     def __init__(self, model_config):
@@ -49,29 +58,28 @@ class MNLIBert(nn.Module):
     
     
 class SST2BERT(nn.Module):
-    def __init__(self, model_config):
+    def __init__(self, model_config, num_out=1, sigmoid=False, return_CLS_representation=False):
         super().__init__()
         #self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased') 
         self.bert = BertModel.from_pretrained('bert-base-cased')
-        #state_path = '/home/ubuntu/NLP-brain-biased-robustness/notebooks/fine_tuned_model'
-        #pre_odict = torch.load(state_path)
-        #filtered_odict = change_all_keys(pre_odict)
-        #self.bert.load_state_dict(filtered_odict, strict=True)
-        self.linear = nn.Linear(768,1)
-        #self.return_CLS_representation = return_CLS_representation
-        #self.sigmoid_bool = sigmoid
+        state_path = f'{PATHS["root"]}/notebooks/fine_tuned_model'
+        if os.path.exists(state_path):
+            pre_odict = torch.load(state_path)
+            filtered_odict = change_all_keys(pre_odict)
+            self.bert.load_state_dict(filtered_odict, strict=True)
+        self.linear = nn.Linear(768,num_out)
+        self.return_CLS_representation = return_CLS_representation
+        self.sigmoid_bool = sigmoid
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
-        #embeddings = self.tokenizer(x, return_tensors='pt', padding=True)
-        #embeddings.to(device)
         representations = self.bert(**x).last_hidden_state
         cls_representation = representations[:,0,:]
         pred = self.linear(cls_representation)
-        #if self.return_CLS_representation:
-        #    return cls_representation
-        #if self.sigmoid_bool:
-        #    return self.sigmoid(pred)
+        if self.return_CLS_representation:
+            return cls_representation
+        if self.sigmoid_bool:
+            return self.sigmoid(pred)
         return pred
     
     
@@ -95,8 +103,6 @@ class YelpBERT(nn.Module):
         self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
         self.bert = BertModel.from_pretrained('bert-base-cased')
         self.linear = nn.Linear(768,5)
-        #self.return_CLS_representation = return_CLS_representation
-        #self.sigmoid_bool = sigmoid
         self.sigmoid = nn.Sigmoid()
         self.device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     def forward(self, x):
@@ -105,10 +111,6 @@ class YelpBERT(nn.Module):
         representations = self.bert(**embeddings).last_hidden_state
         cls_representation = representations[:,0,:]
         pred = self.linear(cls_representation)
-        #if self.return_CLS_representation:
-        #    return cls_representation
-        #if self.sigmoid_bool:
-        #    return self.sigmoid(pred)
         return pred
     
 
@@ -132,3 +134,19 @@ class ReCoRDBERT(nn.Module):
         if self.sigmoid_bool:
             return self.sigmoid(pred)
         return pred
+    
+
+class BrainBiasedBERT(nn.Module):
+    def __init__(self, num_voxels=37913):
+        super().__init__()
+        self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
+        self.bert = BertModel.from_pretrained('bert-base-cased')
+        self.linear = nn.Linear(768,num_voxels)
+        self.device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+    def forward(self, x):
+        embeddings = self.tokenizer(x, return_tensors='pt', padding=True)
+        embeddings.to(self.device)
+        representations = self.bert(**embeddings).last_hidden_state
+        cls_representation = representations[:,0,:]
+        pred_fmri = self.linear(cls_representation)
+        return pred_fmri

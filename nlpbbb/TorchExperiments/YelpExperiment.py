@@ -20,18 +20,6 @@ class Experiment():
         self.train_datasets = [YelpDataset(ds, config["dataset"]) for ds in config["dataset"]["train_datasets"]]
         self.val_datasets = [YelpDataset(ds, config["dataset"]) for ds in config["dataset"]["val_datasets"]]
         
-        # handles two cases: you want to validate internally or using another experiment object
-        #if len(self.train_datasets) == 1 and len(self.val_datasets) == 0:
-        #    total_dset_size = len(self.train_datasets[0])
-        #    train_size = int(0.8 * total_dset_size)
-        #    test_size = total_dset_size - train_size
-        #    training_data, test_data = torch.utils.data.random_split(self.train_datasets[0], [train_size, test_size])
-        #    self.train_loaders = [DataLoader(training_data, batch_size=config["experiment"]["batchsize"], shuffle=True)]
-        #    self.val_loaders = [DataLoader(test_data, batch_size=config["experiment"]["batchsize"], shuffle=False)]
-        #else:
-        #    self.train_loaders = [DataLoader(ds, batch_size=config["experiment"]["batchsize"], shuffle=True) for ds in self.train_datasets]
-        #    self.val_loaders = [DataLoader(ds, batch_size=config["experiment"]["batchsize"], shuffle=False) for ds in self.val_datasets]
-        
         self.val_loaders = []
         for index, ds in enumerate(self.val_datasets):
             if config["dataset"]["train_datasets"][0] == config["dataset"]["val_datasets"][index]:
@@ -47,25 +35,30 @@ class Experiment():
         
         # really you only want to build a model for an experiment object if it is the train experiment
         self.model = self.get_model(config["model"])
+        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=5e-5)
+        num_iters = sum([len(dl) for dl in self.train_loaders])
+        self.lr_scheduler = get_scheduler(name="linear", optimizer=self.optimizer, num_warmup_steps=0, num_training_steps=num_iters)
+        self.loss_function = torch.nn.MSELoss()
                                            
     def get_model(self, model_config):
-        return bbb.networks.MNLIBert(model_config)
+        return bbb.networks.YelpBERT(model_config)
         
-    def train_forward_pass(self, batch, loss_fn, device):
-        pred = model(batch['sentence_1'], batch['sentence_2'])
-        targets = torch.stack(tuple(batch['labels'])).to(device)
-        targets = torch.transpose(targets, 0, 1)
-        loss = loss_fn(pred, targets.float())
+    def train_forward_pass(self, batch, device):
+        #batch = {k: v.to(device) for k, v in batch.items()}
+        #features = {k: v for k, v in batch.items() if k != 'labels'}
+        preds = self.model(batch['text'])
+        targets = batch['labels'].float().to(device)
+        loss = self.loss_function(preds, targets) #replace .loss
         return loss
     
     def val_forward_pass(self, batch, device):
-        pred = model(batch['sentence_1'], batch['sentence_2'])
-        pred = torch.argmax(pred, axis=1)
-        targets = torch.stack(tuple(batch['labels'])).to(device)
-        targets = torch.transpose(targets, 0, 1)
-        labels = torch.argmax(targets, axis=1)
-        num_correct = (pred==labels).sum()
-        num_samples = pred.size(0)
+        #batch = {k: v.to(device) for k, v in batch.items()}
+        #features = {k: v for k, v in batch.items() if k != 'labels'}
+        preds = self.model(batch['text'])
+        preds = torch.argmax(preds, axis=1)
+        labels = torch.argmax(batch['labels'], axis=1).to(device)
+        num_correct = (preds==labels).sum()
+        num_samples = preds.size(0)
         return num_correct, num_samples
 
     

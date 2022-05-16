@@ -1,6 +1,7 @@
 # hf imports
 from datasets import load_dataset
 from transformers import AutoTokenizer
+from transformers import get_scheduler
 
 # torch imports
 import torch
@@ -14,9 +15,13 @@ import nlpbbb as bbb
 class Experiment():
     
     def __init__(self, config):
+        val_map = {
+              "imdb": "test",
+              "sst2": "validation"
+        }
         self.train_datasets = [SST2Datset(ds, "train", config["dataset"]) for ds in config["dataset"]["train_datasets"]]
         assert len(config["dataset"]["val_datasets"]) > 0, "Need val dataset"
-        self.val_datasets = [SST2Datset(ds, "val", config["dataset"]) for ds in config["dataset"]["val_datasets"]]
+        self.val_datasets = [SST2Datset(ds, val_map[ds], config["dataset"]) for ds in config["dataset"]["val_datasets"]]
         
         # handels two cases: you want to validate internally or using another experiment object
         self.train_loaders = [DataLoader(ds, batch_size=config["experiment"]["batchsize"], shuffle=True) for ds in self.train_datasets]
@@ -24,20 +29,25 @@ class Experiment():
         
         # really you only want to build a model for an experiment object if it is the train experiment
         self.model = self.get_model(config["model"])
+        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=5e-5)
+        num_iters = sum([len(dl) for dl in self.train_loaders])
+        self.lr_scheduler = get_scheduler(name="linear", optimizer=self.optimizer, num_warmup_steps=0, num_training_steps=num_iters)
+        self.loss_function = torch.nn.MSELoss()
                                            
     def get_model(self, model_config):
         return bbb.networks.SST2BERT(model_config)
         
-    def train_forward_pass(self, batch, loss_fn, device):
+    def train_forward_pass(self, batch, device):
         batch = {k: v.to(device) for k, v in batch.items()}
         features = {k: v for k, v in batch.items() if k != 'labels'}
-        preds = model(features)
-        loss = loss_function(preds, batch['labels'].float()) #replace .loss
+        preds = self.model(features)
+        loss = self.loss_function(preds, batch['labels'].float())
         return loss
     
     def val_forward_pass(self, batch, device):
+        batch = {k: v.to(device) for k, v in batch.items()}
         features = {k: v for k, v in batch.items() if k != 'labels'}
-        preds = model(features)
+        preds = self.model(features)
         preds = torch.where(preds < .5, 0, 1)
         labels = batch['labels'].reshape(preds.shape)
         num_correct = (preds==labels).sum()
@@ -72,6 +82,7 @@ class SST2Datset(Dataset):
         tokenized_dset = tokenized_dset.remove_columns(removed_fields)        
         tokenized_dset = tokenized_dset.rename_column("label", "labels")
         tokenized_dset.set_format("torch")
+        
         self.tokenized_data = tokenized_dset[split].shuffle(seed=dataset_config["seed"])#.select(range(dataset_config["limit"]))
         
     def __getitem__(self, idx):

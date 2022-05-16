@@ -4,5 +4,6 @@ from . import SST2Experiment
 from . import STSBExperiment
 from . import YelpExperiment
 from . import ReCoRDExperiment
+from . import HarryPotterExperiment
 
 
