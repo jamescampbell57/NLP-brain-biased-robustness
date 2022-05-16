@@ -2,11 +2,11 @@
 experiment:
     name: "HarryPotter-finetune"
     experiment_type: "HarryPotter"
-    epochs: 100
-    val_frequency: 10
-    batchsize: 8
+    epochs: 20
+    val_frequency: 2
+    batchsize: 1
     model_and_task: "BrainBiasedBert-HarryPotter"
-    lr: 0.00005
+    lr: 0.0005
 dataset:
     seed: 42
     subjects: ["1"]

@@ -46,10 +46,11 @@ def run_training_config(config):
                     val_losses.append(val_loop(config["experiment"], exp, epoch, val_loader, device))
             
         train_loss = train_loop(config["experiment"], exp, epoch, device)
-        
         #save whenever you validate
         if epoch % config["experiment"]["val_frequency"] == 0:
             if config["misc"]["save"]:
+                print(train_loss)
+                print(val_losses[0])
                 wandb.log({"train_loss": train_loss})
                 if config["experiment"]["experiment_type"] == "HarryPotter":
                     wandb.log({"val_loss": val_losses[0]})
@@ -67,13 +68,14 @@ def train_loop(train_config, exp, epoch, device):
     for dataloader in exp.train_loaders:
         with tqdm(total=len(dataloader) * train_config["batchsize"], desc=f'Training Epoch {epoch + 1}/{train_config["epochs"]}', unit='batch') as pbar:
             for batch in dataloader: #tryin unpacking text from 'labels' as in model development
+                exp.optimizer.zero_grad()
                 loss = exp.train_forward_pass(batch, device)
                 # standard pytorch backprop
                 total_loss += loss.item()
                 loss.backward()
                 exp.optimizer.step()
-                exp.lr_scheduler.step()
-                exp.optimizer.zero_grad()
+                if exp.lr_scheduler is not None:
+                    exp.lr_scheduler.step()
                 
                 pbar.update(train_config["batchsize"])
     return total_loss/num_iters
@@ -110,5 +112,5 @@ def val_loop(train_config, exp, epoch, dataloader, device):
 
         return torch.corrcoef(combined)[1,1]
     else:
-        return float(sum(primary_values))/float(sum(secondary_values))*100 
+        return float(sum(primary_values)/sum(secondary_values))*100 
     

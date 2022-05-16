@@ -142,11 +142,8 @@ class BrainBiasedBERT(nn.Module):
         self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
         self.bert = BertModel.from_pretrained('bert-base-cased')
         self.linear = nn.Linear(768,num_voxels)
-        self.device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     def forward(self, x):
-        embeddings = self.tokenizer(x, return_tensors='pt', padding=True)
-        embeddings.to(self.device)
-        representations = self.bert(**embeddings).last_hidden_state
+        representations = self.bert(**x).last_hidden_state
         cls_representation = representations[:,0,:]
         pred_fmri = self.linear(cls_representation)
         return pred_fmri

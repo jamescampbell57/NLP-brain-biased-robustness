@@ -31,8 +31,9 @@ class Experiment():
         # really you only want to build a model for an experiment object if it is the train experiment
         self.model = self.get_model()
         self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=config["experiment"]["lr"])
-        num_iters = sum([len(dl) for dl in self.train_loaders])
-        self.lr_scheduler = get_scheduler(name="linear", optimizer=self.optimizer, num_warmup_steps=0, num_training_steps=num_iters)
+        #num_iters = sum([len(dl) for dl in self.train_loaders])
+        #self.lr_scheduler = get_scheduler(name="linear", optimizer=self.optimizer, num_warmup_steps=0, num_training_steps=num_iters)
+        self.lr_scheduler = None
         self.loss_function = torch.nn.MSELoss()
         
                                            
@@ -40,17 +41,20 @@ class Experiment():
         return bbb.networks.BrainBiasedBERT()
         
     def train_forward_pass(self, batch, device):
-        preds = self.model(list(batch[0]))
+        embeddings = self.model.tokenizer(list(batch[0]), return_tensors='pt', padding=True)
+        embeddings.to(device)
         labels = batch[1].to(device)
+        preds = self.model(embeddings)
         loss = self.loss_function(preds, labels.float())
         return loss
     
     def val_forward_pass(self, batch, device):
-        preds = self.model(list(batch[0]))
+        embeddings = self.model.tokenizer(list(batch[0]), return_tensors='pt', padding=True)
+        embeddings.to(device)
         labels = batch[1].to(device)
-        test_loss = self.loss_function(preds, labels.float())
-        num_samples = preds.size(0)
-        return test_loss, num_samples
+        preds = self.model(embeddings)
+        loss = self.loss_function(preds, labels.float())
+        return loss, preds.shape[0]
           
 class HarryPotterDataset(Dataset):
     def __init__(self, split, dataset_config):
@@ -100,7 +104,6 @@ class HarryPotterDataset(Dataset):
                     actual_sentences[idx] = actual_sentences[idx] + word + ' '
 
             fmri = torch.as_tensor(useful_X_fmri)
-            truth_fmri = fmri[:5,:]
 
             for i in range(1271):
                 dataset.append((actual_sentences[i], fmri[i,:]))
