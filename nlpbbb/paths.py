@@ -1,3 +1,3 @@
 PATHS = {
- "root": "/home/ubuntu/nlp-brain-biased-robustness"
+ "root": "/home/vib9/src/NLP-brain-biased-robustness"
 }

@@ -124,7 +124,7 @@ class YelpDataset(Dataset):
         lang_file = open(os.path.join(data_path, f'{ds}.json'))
         language = [json.loads(line) for line in lang_file] 
         lang_file.close()
-        #language = language[0]
+        language = language[0]
         na = []
         for i in language:
             na.append({'text': i['text'], 'labels': F.one_hot((torch.tensor(i['stars']-1)).to(torch.int64), num_classes=5)})
