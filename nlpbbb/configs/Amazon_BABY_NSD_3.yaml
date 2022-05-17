@@ -2,7 +2,7 @@
 experiment:
     name: "train on Baby - epoch 3"
     experiment_type: "Amazon"
-    epochs: 1
+    epochs: 20
     val_frequency: 2
     batchsize: 8
     model_and_task: "NSD Amazon"
