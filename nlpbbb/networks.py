@@ -33,7 +33,7 @@ class AmazonBERT(nn.Module):
         super().__init__()
         self.bert = BertModel.from_pretrained('bert-base-cased')
         if model_config["brain_biased"]:
-            state_path = f'{PATH}/state_dicts/{model_config["state_path"]}'
+            state_path = f'{PATHS["root"]}/state_dicts/{model_config["state_path"]}'
             pre_odict = torch.load(state_path)
             filtered_odict = change_all_keys(pre_odict)
             self.bert.load_state_dict(filtered_odict, strict=True)
@@ -59,7 +59,7 @@ class MNLIBert(nn.Module):
         self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
         self.bert = BertModel.from_pretrained('bert-base-cased')
         if model_config["brain_biased"]:
-            state_path = f'{PATH}/state_dicts/{model_config["state_path"]}'
+            state_path = f'{PATHS["root"]}/state_dicts/{model_config["state_path"]}'
             pre_odict = torch.load(state_path)
             filtered_odict = change_all_keys(pre_odict)
             self.bert.load_state_dict(filtered_odict, strict=True)
@@ -84,7 +84,7 @@ class SST2BERT(nn.Module):
         super().__init__()
         self.bert = BertModel.from_pretrained('bert-base-cased')
         if model_config["brain_biased"]:
-            state_path = f'{PATH}/state_dicts/{model_config["state_path"]}'
+            state_path = f'{PATHS["root"]}/state_dicts/{model_config["state_path"]}'
             pre_odict = torch.load(state_path)
             filtered_odict = change_all_keys(pre_odict)
             self.bert.load_state_dict(filtered_odict, strict=True)
@@ -110,7 +110,7 @@ class STSBBERT(nn.Module):
         self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
         self.bert = BertModel.from_pretrained('bert-base-cased')
         if model_config["brain_biased"]:
-            state_path = f'{PATH}/state_dicts/{model_config["state_path"]}'
+            state_path = f'{PATHS["root"]}/state_dicts/{model_config["state_path"]}'
             pre_odict = torch.load(state_path)
             filtered_odict = change_all_keys(pre_odict)
             self.bert.load_state_dict(filtered_odict, strict=True)
@@ -129,7 +129,7 @@ class YelpBERT(nn.Module):
         self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
         self.bert = BertModel.from_pretrained('bert-base-cased')
         if model_config["brain_biased"]:
-            state_path = f'{PATH}/state_dicts/{model_config["state_path"]}'
+            state_path = f'{PATHS["root"]}/state_dicts/{model_config["state_path"]}'
             pre_odict = torch.load(state_path)
             filtered_odict = change_all_keys(pre_odict)
             self.bert.load_state_dict(filtered_odict, strict=True)
@@ -151,7 +151,7 @@ class ReCoRDBERT(nn.Module):
         #self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
         self.bert = BertModel.from_pretrained('bert-base-cased')
         if model_config["brain_biased"]:
-            state_path = f'{PATH}/state_dicts/{model_config["state_path"]}'
+            state_path = f'{PATHS["root"]}/state_dicts/{model_config["state_path"]}'
             pre_odict = torch.load(state_path)
             filtered_odict = change_all_keys(pre_odict)
             self.bert.load_state_dict(filtered_odict, strict=True)
