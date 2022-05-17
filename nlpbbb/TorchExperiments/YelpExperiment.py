@@ -33,14 +33,14 @@ class Experiment():
             else:
                 self.val_loaders.append(DataLoader(ds, batch_size=config["experiment"]["batchsize"], shuffle=False))
         
-        
         # really you only want to build a model for an experiment object if it is the train experiment
         self.model = self.get_model(config["model"])
-        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=5e-5)
-        num_iters = sum([len(dl) for dl in self.train_loaders])
-        self.lr_scheduler = get_scheduler(name="linear", optimizer=self.optimizer, num_warmup_steps=0, num_training_steps=num_iters)
+        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=config["experiment"]["lr"])
+        #num_iters = sum([len(dl) for dl in self.train_loaders])
+        #self.lr_scheduler = get_scheduler(name="linear", optimizer=self.optimizer, num_warmup_steps=0, num_training_steps=num_iters)
         self.loss_function = torch.nn.MSELoss()
-                                           
+        self.lr_scheduler = None
+        
     def get_model(self, model_config):
         return bbb.networks.YelpBERT(model_config)
         
