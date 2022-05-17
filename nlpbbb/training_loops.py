@@ -39,7 +39,7 @@ def run_training_config(config):
         #Run validation every so often, good to do before training
         if epoch % config["experiment"]["val_frequency"] == 0:
             val_losses = []
-            if config["experiment"]["experiment_type"] == "HarryPotter":
+            if config["experiment"]["experiment_type"] == "HarryPotter" or config["experiment"]["experiment_type"] == "NSD":
                 val_losses.append(val_loop(config["experiment"], exp, epoch, exp.val_loaders[0], device))
             else:
                 for val_loader in exp.val_loaders:
@@ -50,7 +50,7 @@ def run_training_config(config):
         if epoch % config["experiment"]["val_frequency"] == 0:
             if config["misc"]["save"]:
                 wandb.log({"train_loss": train_loss})
-                if config["experiment"]["experiment_type"] == "HarryPotter":
+                if config["experiment"]["experiment_type"] == "HarryPotter" or config["experiment"]["experiment_type"] == "NSD":
                     wandb.log({"val_loss": val_losses[0]})
                 else:
                     for i, val_name in enumerate(config["dataset"]["val_datasets"]):

@@ -1,0 +1,23 @@
+---
+experiment:
+    name: "NSD-finetune"
+    experiment_type: "NSD"
+    epochs: 20
+    val_frequency: 2
+    batchsize: 1
+    model_and_task: "BrainBiasedBert-NSD"
+    lr: 0.0001
+dataset:
+    seed: 42
+    subjects: ["1"]
+model:
+    brain_biased: False
+    num_out: 5
+    sigmoid: False
+    return_CLS_rep: False
+    type: "BrainBiasedBert"
+loss: 
+    name: "MSE"
+misc:
+    save: True
+

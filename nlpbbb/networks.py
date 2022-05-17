@@ -183,3 +183,17 @@ class BrainBiasedBERT(nn.Module):
         cls_representation = representations[:,0,:]
         pred_fmri = self.linear(cls_representation)
         return pred_fmri
+    
+    
+                         
+class NSDBiasedBERT(nn.Module):
+    def __init__(self, num_voxels=23):
+        super().__init__()
+        self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
+        self.bert = BertModel.from_pretrained('bert-base-cased')
+        self.linear = nn.Linear(768,num_voxels)
+    def forward(self, x):
+        representations = self.bert(**x).last_hidden_state
+        cls_representation = representations[:,0,:]
+        pred_fmri = self.linear(cls_representation)
+        return pred_fmri
