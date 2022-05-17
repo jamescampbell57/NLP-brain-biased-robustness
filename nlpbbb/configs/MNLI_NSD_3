@@ -2,7 +2,7 @@
 experiment:
     name: "Train on telephone epoch 3"
     experiment_type: "MNLI"
-    epochs: 1
+    epochs: 20
     val_frequency: 1
     batchsize: 8
     model_and_task: "MNLI NSD"
