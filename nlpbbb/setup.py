@@ -52,16 +52,17 @@ def get_num_options(original_dict):
             num_options = len(original_dict[key][sub_key])
     return num_options
 
-def gen_training_name(run_dict, params):
+def gen_training_name(default_name, run_dict, params):
     names = []
     for key in params.keys():
         if key != "misc":
             subkeys = params[key].keys()
             for sk in subkeys:
-                names.append(f"{sk}:{run_dict[key][sk]}")
-    return_name = f'model_type:{run_dict["model"]["type"]}'
+                if sk != "state_path":
+                    names.append(f"{sk}:{run_dict[key][sk]}")
+    return_name = f'config:{default_name}'
     for field in names:
-        return_name += f"${field}"
+        return_name += f"~{field}"
     return return_name
 
 def create_gridsearch(params, default_name=None, merge_default=False):
@@ -100,7 +101,7 @@ def create_gridsearch(params, default_name=None, merge_default=False):
     if merge_default:
         for n in range(len(new_dicts)):
             new_dicts[n] = merge_dicts(default, new_dicts[n])
-            new_dicts[n]["experiment"]["name"] = gen_training_name(new_dicts[n], params)
+            new_dicts[n]["experiment"]["name"] = gen_training_name(default_name, new_dicts[n], params)
 
     return new_dicts
 

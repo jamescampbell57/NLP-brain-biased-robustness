@@ -67,7 +67,7 @@ class YelpDataset(Dataset):
     def __init__(self, ds, dataset_config):
         data_path = f'{PATHS["root"]}/data/yelp'
         
-        if not os.path.exists(os.path.join(data_path, 'italian.json')):
+        if not os.path.exists(os.path.join(data_path, f'{ds}.json')):
             f1 = open(os.path.join(data_path,'yelp_academic_dataset_business.json')) #150346
             f2 = open(os.path.join(data_path,'yelp_academic_dataset_review.json')) #6990280
 
@@ -112,13 +112,13 @@ class YelpDataset(Dataset):
                 if example['business_id'] in italian_business_ids:
                     italian.append(example)
 
-            with open('american.json', 'w') as f3:
+            with open(os.path.join(data_path, 'american.json'), 'w') as f3:
                 json.dump(american, f3)
-            with open('japanese.json', 'w') as f4:
+            with open(os.path.join(data_path, 'japanese.json'), 'w') as f4:
                 json.dump(japanese, f4)
-            with open('chinese.json', 'w') as f5:
+            with open(os.path.join(data_path, 'chinese.json'), 'w') as f5:
                 json.dump(chinese, f5)
-            with open('italian.json', 'w') as f6:
+            with open(os.path.join(data_path, 'italian.json'), 'w') as f6:
                 json.dump(italian, f6)
             
         lang_file = open(os.path.join(data_path, f'{ds}.json'))
