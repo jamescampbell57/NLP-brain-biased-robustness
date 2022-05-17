@@ -1,0 +1,26 @@
+---
+experiment:
+    name: "train on sst2 epoch 10"
+    experiment_type: "SST2"
+    epochs: 20
+    val_frequency: 1
+    batchsize: 8
+    model_and_task: "sst2-imdb NSD"
+    lr: 0.0001
+dataset:
+    train_datasets: ["sst2"]
+    val_datasets: ["imdb", "sst2"]
+    limit: 1000
+    seed: 42
+model:
+    brain_biased: True
+    num_out: 1
+    sigmoid: False
+    return_CLS_rep: False
+    #added type
+    type: 'BERT'
+    state_path: 'NSD_model_prime_prime_epoch_10'
+loss: 
+    name: 
+misc:
+    save: True
