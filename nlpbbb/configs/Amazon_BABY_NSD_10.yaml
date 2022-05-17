@@ -14,7 +14,7 @@ dataset:
     val_limit: 10000
     seed: 42
 model:
-    brain_biased: False
+    brain_biased: True
     num_out: 5
     sigmoid: False
     return_CLS_rep: False
@@ -23,4 +23,4 @@ model:
 loss: 
     name: 
 misc:
-    save: False
+    save: True
