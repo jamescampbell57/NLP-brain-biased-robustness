@@ -49,8 +49,6 @@ def run_training_config(config):
         #save whenever you validate
         if epoch % config["experiment"]["val_frequency"] == 0:
             if config["misc"]["save"]:
-                print(train_loss)
-                print(val_losses[0])
                 wandb.log({"train_loss": train_loss})
                 if config["experiment"]["experiment_type"] == "HarryPotter":
                     wandb.log({"val_loss": val_losses[0]})
