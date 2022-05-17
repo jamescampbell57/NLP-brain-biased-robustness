@@ -14,7 +14,7 @@ def load_obj(name):
         return pickle.load(f)
     
     
-def save_model(exp, optimizer, loss, config, date, epoch):
+def save_model(exp, loss, config, date, epoch):
     root_dir = PATHS["root"]
     save_dir = f"{root_dir}/results/models"
     models_root = os.path.join(save_dir, date, config["experiment"]["name"])
@@ -33,6 +33,6 @@ def save_model(exp, optimizer, loss, config, date, epoch):
     torch.save({
             'epoch': epoch,
             'model_state_dict': exp.model.state_dict(),
-            'optimizer_state_dict': optimizer.state_dict(),
+            'optimizer_state_dict': exp.optimizer.state_dict(),
             'loss': loss,
             }, os.path.join(epoch_root, "train_info"))

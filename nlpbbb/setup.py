@@ -21,17 +21,19 @@ def get_experiment(config):
         exp = bbb.TorchExperiments.ReCoRDExperiment.Experiment
     elif config["experiment"]["experiment_type"] == "Yelp":
         exp = bbb.TorchExperiments.YelpExperiment.Experiment
+    elif config["experiment"]["experiment_type"] == "HarryPotter":
+        exp = bbb.TorchExperiments.HarryPotterExperiment.Experiment
     else:
         raise ValueError("Experiment not implemented yet!")
         
     return exp(config)
 
-def run_submitit_job_array(config_dicts, timeout=720, mem=64, num_gpus=1):
+def run_submitit_job_array(config_dicts, timeout, mem, num_gpus=1):
     jobs = []
     executor = submitit.AutoExecutor(folder=f'{PATHS["root"]}/bash/submitit')
     executor.update_parameters(timeout_min=timeout, mem_gb=mem, gpus_per_node=num_gpus, slurm_partition="sablab", slurm_wckey="")
     for config in config_dicts:
-        job = executor.submit(uvs.training_funcs.train_net, config)
+        job = executor.submit(bbb.training_loops.run_training_config, config)
         jobs.append(job)
     return jobs
 
@@ -56,19 +58,18 @@ def gen_training_name(run_dict, params):
         if key != "misc":
             subkeys = params[key].keys()
             for sk in subkeys:
-                if not (key == "model" and sk == "type"):
-                    names.append(f"{sk}:{run_dict[key][sk]}")
+                names.append(f"{sk}:{run_dict[key][sk]}")
     return_name = f'model_type:{run_dict["model"]["type"]}'
     for field in names:
-        return_name += f"/{field}"
+        return_name += f"${field}"
     return return_name
 
-def create_gridsearch(params, merge_default=False, default=None):
-    if not default:
-        with open(f'{PATHS["root"]}/nlpbbb/configs/DEFAULT.yaml','r') as stream:
+def create_gridsearch(params, default_name=None, merge_default=False):
+    if merge_default:
+        assert default_name is not None, "Must specify default config."
+        with open(f'{PATHS["root"]}/nlpbbb/configs/{default_name}.yaml','r') as stream:
             default = yaml.safe_load(stream)
         
-    #new_dicts = [return_empty_dict_copy(default) for _ in range(get_num_options(params))]
     new_dicts = []
     first_dicts = True
     
@@ -99,7 +100,7 @@ def create_gridsearch(params, merge_default=False, default=None):
     if merge_default:
         for n in range(len(new_dicts)):
             new_dicts[n] = merge_dicts(default, new_dicts[n])
-            new_dicts[n]["training"]["name"] = gen_training_name(new_dicts[n], params)
+            new_dicts[n]["experiment"]["name"] = gen_training_name(new_dicts[n], params)
 
     return new_dicts
 

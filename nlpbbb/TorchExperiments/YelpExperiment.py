@@ -11,6 +11,7 @@ import nlpbbb as bbb
 import os
 import sys
 import csv
+import json
 
 from nlpbbb.paths import PATHS
 
@@ -19,18 +20,6 @@ class Experiment():
     def __init__(self, config):
         self.train_datasets = [YelpDataset(ds, config["dataset"]) for ds in config["dataset"]["train_datasets"]]
         self.val_datasets = [YelpDataset(ds, config["dataset"]) for ds in config["dataset"]["val_datasets"]]
-        
-        # handles two cases: you want to validate internally or using another experiment object
-        #if len(self.train_datasets) == 1 and len(self.val_datasets) == 0:
-        #    total_dset_size = len(self.train_datasets[0])
-        #    train_size = int(0.8 * total_dset_size)
-        #    test_size = total_dset_size - train_size
-        #    training_data, test_data = torch.utils.data.random_split(self.train_datasets[0], [train_size, test_size])
-        #    self.train_loaders = [DataLoader(training_data, batch_size=config["experiment"]["batchsize"], shuffle=True)]
-        #    self.val_loaders = [DataLoader(test_data, batch_size=config["experiment"]["batchsize"], shuffle=False)]
-        #else:
-        #    self.train_loaders = [DataLoader(ds, batch_size=config["experiment"]["batchsize"], shuffle=True) for ds in self.train_datasets]
-        #    self.val_loaders = [DataLoader(ds, batch_size=config["experiment"]["batchsize"], shuffle=False) for ds in self.val_datasets]
         
         self.val_loaders = []
         for index, ds in enumerate(self.val_datasets):
@@ -47,41 +36,36 @@ class Experiment():
         
         # really you only want to build a model for an experiment object if it is the train experiment
         self.model = self.get_model(config["model"])
+        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=5e-5)
+        num_iters = sum([len(dl) for dl in self.train_loaders])
+        self.lr_scheduler = get_scheduler(name="linear", optimizer=self.optimizer, num_warmup_steps=0, num_training_steps=num_iters)
+        self.loss_function = torch.nn.MSELoss()
                                            
     def get_model(self, model_config):
-        return bbb.networks.MNLIBert(model_config)
+        return bbb.networks.YelpBERT(model_config)
         
-    def train_forward_pass(self, batch, loss_fn, device):
-        pred = model(batch['sentence_1'], batch['sentence_2'])
-        targets = torch.stack(tuple(batch['labels'])).to(device)
-        targets = torch.transpose(targets, 0, 1)
-        loss = loss_fn(pred, targets.float())
+    def train_forward_pass(self, batch, device):
+        #batch = {k: v.to(device) for k, v in batch.items()}
+        #features = {k: v for k, v in batch.items() if k != 'labels'}
+        preds = self.model(batch['text'])
+        targets = batch['labels'].float().to(device)
+        loss = self.loss_function(preds, targets) #replace .loss
         return loss
     
     def val_forward_pass(self, batch, device):
-        pred = model(batch['sentence_1'], batch['sentence_2'])
-        pred = torch.argmax(pred, axis=1)
-        targets = torch.stack(tuple(batch['labels'])).to(device)
-        targets = torch.transpose(targets, 0, 1)
-        labels = torch.argmax(targets, axis=1)
-        num_correct = (pred==labels).sum()
-        num_samples = pred.size(0)
+        #batch = {k: v.to(device) for k, v in batch.items()}
+        #features = {k: v for k, v in batch.items() if k != 'labels'}
+        preds = self.model(batch['text'])
+        preds = torch.argmax(preds, axis=1)
+        labels = torch.argmax(batch['labels'], axis=1).to(device)
+        num_correct = (preds==labels).sum()
+        num_samples = preds.size(0)
         return num_correct, num_samples
 
     
 class YelpDataset(Dataset):
     def __init__(self, ds, dataset_config):
         data_path = f'{PATHS["root"]}/data/yelp'
-        
-        if not os.path.exists(data_path):
-            os.system('pip install kaggle')
-            os.system('mkdir '+data_path)
-            
-        #manually install:
-        #https://www.kaggle.com/datasets/yelp-dataset/yelp-dataset/download
-        #kaggle datasets download
-        #forum: https://www.kaggle.com/general/6604
-        
         
         if not os.path.exists(os.path.join(data_path, 'italian.json')):
             f1 = open(os.path.join(data_path,'yelp_academic_dataset_business.json')) #150346
@@ -113,14 +97,10 @@ class YelpDataset(Dataset):
                 if (not example['categories'] is None) and 'Italian' in example['categories']:
                     italian_business_ids.append(example['business_id'])
 
-            import time
-
             american = []
             japanese = []
             chinese = []
             italian = []
-
-            start = time.time()
 
             for idx, example in enumerate(review):
                 if example['business_id'] in american_business_ids:
@@ -131,9 +111,6 @@ class YelpDataset(Dataset):
                     chinese.append(example)
                 if example['business_id'] in italian_business_ids:
                     italian.append(example)
-                if idx%250000 == 0:
-                    print("Hello (28 total)")
-
 
             with open('american.json', 'w') as f3:
                 json.dump(american, f3)
@@ -144,64 +121,14 @@ class YelpDataset(Dataset):
             with open('italian.json', 'w') as f6:
                 json.dump(italian, f6)
             
-        import json
-        data_path = '/home/ubuntu/NLP-brain-biased-robustness/data/yelp/'
-        f1 = open(data_path+'american.json')
-        f2 = open(data_path+'italian.json')
-        f3 = open(data_path+'japanese.json')
-        f4 = open(data_path+'chinese.json')
-
-        american = []
-        for line in f1:
-            american.append(json.loads(line))
-
-        italian = []
-        for line in f2:
-            italian.append(json.loads(line))
-
-        japanese = []
-        for line in f3:
-            japanese.append(json.loads(line))
-
-        chinese = []
-        for line in f4:
-            chinese.append(json.loads(line))
-
-        f1.close()
-        f2.close()
-        f3.close()
-        f4.close()
-
-
-        american = american[0]
-        italian = italian[0]
-        japanese = japanese[0]
-        chinese = chinese[0]
-        
+        lang_file = open(os.path.join(data_path, f'{ds}.json'))
+        language = [json.loads(line) for line in lang_file] 
+        lang_file.close()
+        #language = language[0]
         na = []
-        for i in american:
+        for i in language:
             na.append({'text': i['text'], 'labels': F.one_hot((torch.tensor(i['stars']-1)).to(torch.int64), num_classes=5)})
-
-        ni = []
-        for i in italian:
-            ni.append({'text': i['text'], 'labels': F.one_hot((torch.tensor(i['stars']-1)).to(torch.int64), num_classes=5)})
-
-        nj = []
-        for i in japanese:
-            nj.append({'text': i['text'], 'labels': F.one_hot((torch.tensor(i['stars']-1)).to(torch.int64), num_classes=5)})
-
-        nc = []
-        for i in chinese:
-            nc.append({'text': i['text'], 'labels': F.one_hot((torch.tensor(i['stars']-1)).to(torch.int64), num_classes=5)})
-            
-        if ds == "american":
-            self.tokenized_data = na
-        if ds == "italian":
-            self.tokenized_data = ni
-        if ds == "japanese":
-            self.tokenized_data = nj
-        if ds == "chinese":
-            self.tokenized_data = nc
+        self.tokenized_data = na
         
     def __getitem__(self, idx):
         return self.tokenized_data[idx]

@@ -2,7 +2,7 @@
 experiment:
     name: "train on Clothes"
     experiment_type: "Amazon"
-    epochs: 20
+    epochs: 1
     val_frequency: 2
     batchsize: 8
     model_and_task: "BERT Amazon"
@@ -20,5 +20,5 @@ model:
 loss: 
     name: 
 misc:
-    save: True
+    save: False
 

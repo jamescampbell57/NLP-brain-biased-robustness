@@ -1,36 +1,28 @@
 # hf imports
 from datasets import load_dataset
 from transformers import AutoTokenizer
+from transformers import get_scheduler
 
 # torch imports
 import torch
+import torch.nn as nn
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 import torch.nn.functional as F
 
 # nlpbbb imports
 import nlpbbb as bbb
-
-import csv
 from nlpbbb.paths import PATHS
+
+# random imports
+import csv
+import os
 
 class Experiment():
     
     def __init__(self, config):
         self.train_datasets = [STSBDataset(ds, config["dataset"]) for ds in config["dataset"]["train_datasets"]]
         self.val_datasets = [STSBDataset(ds, config["dataset"]) for ds in config["dataset"]["val_datasets"]]
-        
-        # handels two cases: you want to validate internally or using another experiment object
-        #if len(self.train_datasets) == 1 and len(self.val_datasets) == 0:
-        #    total_dset_size = len(self.train_datasets[0])
-        #    train_size = int(0.8 * total_dset_size)
-        #    test_size = total_dset_size - train_size
-        #    training_data, test_data = torch.utils.data.random_split(self.train_datasets[0], [train_size, test_size])
-        #    self.train_loaders = [DataLoader(training_data, batch_size=config["experiment"]["batchsize"], shuffle=True)]
-        #    self.val_loaders = [DataLoader(test_data, batch_size=config["experiment"]["batchsize"], shuffle=False)]
-        #else:
-        #    self.train_loaders = [DataLoader(ds, batch_size=config["experiment"]["batchsize"], shuffle=True) for ds in self.train_datasets]
-        #    self.val_loaders = [DataLoader(ds, batch_size=config["experiment"]["batchsize"], shuffle=False) for ds in self.val_datasets]
         
         self.val_loaders = []
         for index, ds in enumerate(self.val_datasets):
@@ -47,24 +39,29 @@ class Experiment():
         # really you only want to build a model for an experiment object if it is the train experiment
         self.model = self.get_model(config["model"])
         self.cos = nn.CosineSimilarity(dim=1, eps=1e-6)
+        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=5e-5)
+        num_iters = sum([len(dl) for dl in self.train_loaders])
+        self.lr_scheduler = get_scheduler(name="linear", optimizer=self.optimizer, num_warmup_steps=0, num_training_steps=num_iters)
+        self.loss_function = torch.nn.MSELoss()
                                            
     def get_model(self, model_config):
         return bbb.networks.STSBBERT(model_config)
         
-    def train_forward_pass(self, batch, loss_fn, device):
-        vec_1 = model(batch['sentence_1'])
-        vec_2 = model(batch['sentence_2'])
+    def train_forward_pass(self, batch, device):
+        
+        vec_1 = self.model(batch['sentence_1'])
+        vec_2 = self.model(batch['sentence_2'])
         cosine_similarity_times_5 = self.cos(vec_1, vec_2) * 5
         targets = batch['labels'].float().to(device)
-        loss = loss_function(cosine_similarity_times_5, targets) #replace .loss
+        loss = self.loss_function(cosine_similarity_times_5, targets) #replace .loss
         return loss
     
     def val_forward_pass(self, batch, device):
         cosine_similarities = []
         gold = []
         
-        vec_1 = model(batch['sentence_1'])
-        vec_2 = model(batch['sentence_2'])
+        vec_1 = self.model(batch['sentence_1'])
+        vec_2 = self.model(batch['sentence_2'])
         cosine_similarity = self.cos(vec_1, vec_2)
         golds = batch['labels'].float()
         for idx, similarity in enumerate(cosine_similarity):

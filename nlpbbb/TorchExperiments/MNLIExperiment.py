@@ -1,6 +1,7 @@
 # hf imports
 from datasets import load_dataset
 from transformers import AutoTokenizer
+from transformers import get_scheduler
 
 # torch imports
 import torch
@@ -29,34 +30,34 @@ class Experiment():
         # handels two cases: you want to validate internally or using another experiment object
         for index, ds in enumerate(self.val_datasets):
             if config["dataset"]["train_datasets"][0] == config["dataset"]["val_datasets"][index]:
-                
-        #if len(self.train_datasets) == 1 and len(self.val_datasets) == 0:
                 total_dset_size = len(self.train_datasets[0])
                 train_size = int(0.8 * total_dset_size)
                 test_size = total_dset_size - train_size
                 training_data, test_data = torch.utils.data.random_split(self.train_datasets[0], [train_size, test_size])
                 self.train_loaders = [DataLoader(training_data, batch_size=config["experiment"]["batchsize"], shuffle=True)]
                 self.val_loaders.append(DataLoader(test_data, batch_size=config["experiment"]["batchsize"], shuffle=False))
-                #self.val_loaders = [DataLoader(test_data, batch_size=config["experiment"]["batchsize"], shuffle=False)]
             else:
-            #self.train_loaders = [DataLoader(ds, batch_size=config["experiment"]["batchsize"], shuffle=True) for ds in self.train_datasets]
-            #self.val_loaders = [DataLoader(ds, batch_size=config["experiment"]["batchsize"], shuffle=False) for ds in self.val_datasets]
                 self.val_loaders.append(DataLoader(ds, batch_size=config["experiment"]["batchsize"], shuffle=False))
         # really you only want to build a model for an experiment object if it is the train experiment
         self.model = self.get_model(config["model"])
+        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=5e-5)
+        self.loss_function = torch.nn.MSELoss()
+        #learning rate scheduler
+        num_iters = sum([len(dl) for dl in self.train_loaders])
+        self.lr_scheduler = get_scheduler(name="linear", optimizer=self.optimizer, num_warmup_steps=0, num_training_steps=num_iters)
                                            
     def get_model(self, model_config):
         return bbb.networks.MNLIBert(model_config)
         
-    def train_forward_pass(self, batch, loss_fn, device):
-        pred = model(batch['sentence_1'], batch['sentence_2'])
+    def train_forward_pass(self, batch, device):
+        pred = self.model(batch['sentence_1'], batch['sentence_2'])
         targets = torch.stack(tuple(batch['labels'])).to(device)
         targets = torch.transpose(targets, 0, 1)
-        loss = loss_fn(pred, targets.float())
+        loss = self.loss_function(pred, targets.float())
         return loss
     
     def val_forward_pass(self, batch, device):
-        pred = model(batch['sentence_1'], batch['sentence_2'])
+        pred = self.model(batch['sentence_1'], batch['sentence_2'])
         pred = torch.argmax(pred, axis=1)
         targets = torch.stack(tuple(batch['labels'])).to(device)
         targets = torch.transpose(targets, 0, 1)
