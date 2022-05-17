@@ -12,6 +12,21 @@ from nlpbbb.paths import PATHS
 # random imports
 import os
 
+def change_all_keys(pre_odict):
+            def change_key(odict, old, new):
+                for _ in range(len(odict)):
+                    k, v = odict.popitem(False)
+                    odict[new if old == k else k] = v
+                    return odict
+            for key in pre_odict.keys():
+                if key[:5] == 'bert.':
+                    post_odict = change_key(pre_odict, key, key[5:])
+                    return change_all_keys(post_odict)
+                if key[:7] == 'linear.':
+                    del pre_odict[key]
+                    return change_all_keys(pre_odict)
+            return pre_odict
+
 class AmazonBERT(nn.Module):
     def __init__(self, model_config):
         #num_out=5, sigmoid=False, return_CLS_representation=False
