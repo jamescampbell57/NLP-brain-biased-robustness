@@ -31,11 +31,13 @@ class AmazonBERT(nn.Module):
     def __init__(self, model_config):
         #num_out=5, sigmoid=False, return_CLS_representation=False
         super().__init__()
-        #self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
         self.bert = BertModel.from_pretrained('bert-base-cased')
+        if model_config["brain_biased"]:
+            state_path = f'{PATH}/state_dicts/{model_config["state_path"]}'
+            pre_odict = torch.load(state_path)
+            filtered_odict = change_all_keys(pre_odict)
+            self.bert.load_state_dict(filtered_odict, strict=True)
         self.linear = nn.Linear(768, 5)
-        #self.return_CLS_representation = model_config["return_CLS_rep"]
-        #self.sigmoid_bool = model_config["sigmoid"]
         self.sigmoid = nn.Sigmoid()
         
     def forward(self, x):
@@ -56,6 +58,11 @@ class MNLIBert(nn.Module):
         super().__init__()
         self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
         self.bert = BertModel.from_pretrained('bert-base-cased')
+        if model_config["brain_biased"]:
+            state_path = f'{PATH}/state_dicts/{model_config["state_path"]}'
+            pre_odict = torch.load(state_path)
+            filtered_odict = change_all_keys(pre_odict)
+            self.bert.load_state_dict(filtered_odict, strict=True)
         self.linear = nn.Linear(768*2, 3)
         self.device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     def forward(self, x, y):
@@ -75,10 +82,9 @@ class MNLIBert(nn.Module):
 class SST2BERT(nn.Module):
     def __init__(self, model_config, num_out=1, sigmoid=False, return_CLS_representation=False):
         super().__init__()
-        #self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased') 
         self.bert = BertModel.from_pretrained('bert-base-cased')
-        state_path = f'{PATHS["root"]}/notebooks/fine_tuned_model'
-        if os.path.exists(state_path):
+        if model_config["brain_biased"]:
+            state_path = f'{PATH}/state_dicts/{model_config["state_path"]}'
             pre_odict = torch.load(state_path)
             filtered_odict = change_all_keys(pre_odict)
             self.bert.load_state_dict(filtered_odict, strict=True)
@@ -103,6 +109,11 @@ class STSBBERT(nn.Module):
         super().__init__()
         self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
         self.bert = BertModel.from_pretrained('bert-base-cased')
+        if model_config["brain_biased"]:
+            state_path = f'{PATH}/state_dicts/{model_config["state_path"]}'
+            pre_odict = torch.load(state_path)
+            filtered_odict = change_all_keys(pre_odict)
+            self.bert.load_state_dict(filtered_odict, strict=True)
         self.device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     def forward(self, x):
         embeddings = self.tokenizer(x, return_tensors='pt', padding=True, truncation=True)
@@ -117,6 +128,11 @@ class YelpBERT(nn.Module):
         super().__init__()
         self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
         self.bert = BertModel.from_pretrained('bert-base-cased')
+        if model_config["brain_biased"]:
+            state_path = f'{PATH}/state_dicts/{model_config["state_path"]}'
+            pre_odict = torch.load(state_path)
+            filtered_odict = change_all_keys(pre_odict)
+            self.bert.load_state_dict(filtered_odict, strict=True)
         self.linear = nn.Linear(768,5)
         self.sigmoid = nn.Sigmoid()
         self.device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
@@ -134,6 +150,11 @@ class ReCoRDBERT(nn.Module):
         super().__init__()
         #self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
         self.bert = BertModel.from_pretrained('bert-base-cased')
+        if model_config["brain_biased"]:
+            state_path = f'{PATH}/state_dicts/{model_config["state_path"]}'
+            pre_odict = torch.load(state_path)
+            filtered_odict = change_all_keys(pre_odict)
+            self.bert.load_state_dict(filtered_odict, strict=True)
         self.linear = nn.Linear(768,num_out)
         self.return_CLS_representation = return_CLS_representation
         self.sigmoid_bool = sigmoid
