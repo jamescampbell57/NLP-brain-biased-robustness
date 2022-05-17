@@ -2,7 +2,7 @@
 experiment:
     name: "Train on telephone epoch 10"
     experiment_type: "MNLI"
-    epochs: 1
+    epochs: 20
     val_frequency: 1
     batchsize: 8
     model_and_task: "MNLI NSD"
@@ -12,7 +12,7 @@ dataset:
     val_datasets: ["telephone","letters","facetoface"]
     seed: 42
 model:
-    brain_biased: False
+    brain_biased: True
     sigmoid: False
     return_CLS_rep: False
     #added type
