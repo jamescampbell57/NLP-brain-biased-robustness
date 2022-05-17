@@ -14,3 +14,6 @@ pip install numpy
 pip install pyyaml
 pip install pickle-mixin
 pip install tqdm
+pip install h5py
+pip install scipy
+pip install pycocotools
