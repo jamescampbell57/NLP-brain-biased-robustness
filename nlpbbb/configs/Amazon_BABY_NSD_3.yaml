@@ -1,0 +1,26 @@
+---
+experiment:
+    name: "train on Baby - epoch 3"
+    experiment_type: "Amazon"
+    epochs: 20
+    val_frequency: 2
+    batchsize: 8
+    model_and_task: "NSD Amazon"
+    lr: 0.0001
+dataset:
+    train_datasets: ["Baby_v1_00"]
+    val_datasets: ["Baby_v1_00", "Shoes_v1_00", "Apparel_v1_00", "Music_v1_00", "Video_v1_00"]
+    train_limit: 50000
+    val_limit: 10000
+    seed: 42
+model:
+    brain_biased: True
+    num_out: 5
+    sigmoid: False
+    return_CLS_rep: False
+    type: 'BERT'
+    state_path: 'NSD_model_prime_prime_epoch_3'
+loss: 
+    name: 
+misc:
+    save: True

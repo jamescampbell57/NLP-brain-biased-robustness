@@ -23,6 +23,8 @@ def get_experiment(config):
         exp = bbb.TorchExperiments.YelpExperiment.Experiment
     elif config["experiment"]["experiment_type"] == "HarryPotter":
         exp = bbb.TorchExperiments.HarryPotterExperiment.Experiment
+    elif config["experiment"]["experiment_type"] == "NSD":
+        exp = bbb.TorchExperiments.NSDExperiment.Experiment
     else:
         raise ValueError("Experiment not implemented yet!")
         
