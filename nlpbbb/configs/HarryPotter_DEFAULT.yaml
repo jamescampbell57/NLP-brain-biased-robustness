@@ -6,11 +6,12 @@ experiment:
     val_frequency: 2
     batchsize: 1
     model_and_task: "BrainBiasedBert-HarryPotter"
-    lr: 0.0005
+    lr: 0.0001
 dataset:
     seed: 42
     subjects: ["1"]
 model:
+    brain_biased: False
     num_out: 5
     sigmoid: False
     return_CLS_rep: False

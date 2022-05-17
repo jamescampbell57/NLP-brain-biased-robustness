@@ -6,11 +6,13 @@ experiment:
     val_frequency: 1
     batchsize: 8
     model_and_task: "BERT MNLI"
+    lr: 0.0001
 dataset:
     train_datasets: ["telephone"]
     val_datasets: ["telephone","letters","facetoface"]
     seed: 42
 model:
+    brain_biased: False
     sigmoid: False
     return_CLS_rep: False
     #added type

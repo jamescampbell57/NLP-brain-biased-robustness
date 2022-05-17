@@ -5,19 +5,21 @@ experiment:
     epochs: 2
     val_frequency: 3
     batchsize: 8
+    lr: 0.0001
 dataset:
     train_datasets: ["Baby_v1_00"]
     val_datasets: []
     limit: 1000
     seed: 42
 model:
+    brain_biased: False
     num_out: 5
     sigmoid: False
     return_CLS_rep: False
     #added type
     type: 'BERT'
 loss: 
-    name: 
+    name: "MSE"
 misc:
     save: False
 

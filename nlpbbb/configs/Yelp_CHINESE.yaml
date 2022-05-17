@@ -6,12 +6,14 @@ experiment:
     val_frequency: 2
     batchsize: 8
     model_and_task: "BERT Yelp"
+    lr: 0.0001
 dataset:
     train_datasets: ["chinese"]
     val_datasets: ["american","italian","japanese","chinese"]
     limit: 1000
     seed: 42
 model:
+    brain_biased: False
     num_out: 5
     sigmoid: False
     return_CLS_rep: False
