@@ -42,9 +42,8 @@ def run_training_config(config):
             if config["experiment"]["experiment_type"] == "HarryPotter" or config["experiment"]["experiment_type"] == "NSD":
                 val_losses.append(val_loop(config["experiment"], exp, epoch, exp.val_loaders[0], device))
             else:
-                if False:
-                    for val_loader in exp.val_loaders:
-                        val_losses.append(val_loop(config["experiment"], exp, epoch, val_loader, device))
+                for val_loader in exp.val_loaders:
+                    val_losses.append(val_loop(config["experiment"], exp, epoch, val_loader, device))
             
         train_loss = train_loop(config["experiment"], exp, epoch, device)
         #save whenever you validate
