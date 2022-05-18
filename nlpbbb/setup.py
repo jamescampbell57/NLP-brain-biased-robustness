@@ -62,9 +62,12 @@ def gen_training_name(default_name, run_dict, params):
             for sk in subkeys:
                 if sk != "state_path":
                     names.append(f"{sk}:{run_dict[key][sk]}")
+                else:
+                    names.append(f'loaded-epoch:{run_dict[key][sk].split("/")[-2]}')
     return_name = f'config:{default_name}'
     for field in names:
         return_name += f"~{field}"
+    print(return_name)
     return return_name
 
 def create_gridsearch(params, default_name=None, merge_default=False):

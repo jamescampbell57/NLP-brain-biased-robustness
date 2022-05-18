@@ -6,6 +6,7 @@ import torch.nn.functional as F
 
 # nlpbbb imports
 import nlpbbb as bbb
+from transformers import get_scheduler
 
 # misc imports
 import os
@@ -18,8 +19,8 @@ from nlpbbb.paths import PATHS
 class Experiment():
     
     def __init__(self, config):
-        self.train_datasets = [YelpDataset(ds, config["dataset"]) for ds in config["dataset"]["train_datasets"]]
-        self.val_datasets = [YelpDataset(ds, config["dataset"]) for ds in config["dataset"]["val_datasets"]]
+        self.train_datasets = [YelpDataset(ds, config["dataset"]["train_limit"], config["dataset"]) for ds in config["dataset"]["train_datasets"]]
+        self.val_datasets = [YelpDataset(ds, config["dataset"]["val_limit"], config["dataset"]) for ds in config["dataset"]["val_datasets"]]
         
         self.val_loaders = []
         for index, ds in enumerate(self.val_datasets):
@@ -36,8 +37,8 @@ class Experiment():
         # really you only want to build a model for an experiment object if it is the train experiment
         self.model = self.get_model(config["model"])
         self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=config["experiment"]["lr"])
-        #num_iters = sum([len(dl) for dl in self.train_loaders])
-        #self.lr_scheduler = get_scheduler(name="linear", optimizer=self.optimizer, num_warmup_steps=0, num_training_steps=num_iters)
+        num_iters = sum([len(dl) for dl in self.train_loaders])
+        self.lr_scheduler = get_scheduler(name="linear", optimizer=self.optimizer, num_warmup_steps=0, num_training_steps=num_iters)
         self.loss_function = torch.nn.MSELoss()
         self.lr_scheduler = None
         
@@ -64,7 +65,7 @@ class Experiment():
 
     
 class YelpDataset(Dataset):
-    def __init__(self, ds, dataset_config):
+    def __init__(self, ds, limit, dataset_config):
         data_path = f'{PATHS["root"]}/data/yelp'
         
         if not os.path.exists(os.path.join(data_path, f'{ds}.json')):
@@ -120,13 +121,13 @@ class YelpDataset(Dataset):
                 json.dump(chinese, f5)
             with open(os.path.join(data_path, 'italian.json'), 'w') as f6:
                 json.dump(italian, f6)
-            
+        
         lang_file = open(os.path.join(data_path, f'{ds}.json'))
         language = [json.loads(line) for line in lang_file] 
         lang_file.close()
         language = language[0]
         na = []
-        for i in language:
+        for i in language[:limit]:
             na.append({'text': i['text'], 'labels': F.one_hot((torch.tensor(i['stars']-1)).to(torch.int64), num_classes=5)})
         self.tokenized_data = na
         

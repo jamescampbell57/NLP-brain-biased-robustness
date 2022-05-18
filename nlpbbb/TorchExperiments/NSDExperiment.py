@@ -39,8 +39,8 @@ class Experiment():
         # really you only want to build a model for an experiment object if it is the train experiment
         self.model = self.get_model()
         self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=config["experiment"]["lr"])
-        #num_iters = sum([len(dl) for dl in self.train_loaders])
-        #self.lr_scheduler = get_scheduler(name="linear", optimizer=self.optimizer, num_warmup_steps=0, num_training_steps=num_iters)
+        num_iters = sum([len(dl) for dl in self.train_loaders])
+        self.lr_scheduler = get_scheduler(name="linear", optimizer=self.optimizer, num_warmup_steps=0, num_training_steps=num_iters)
         self.lr_scheduler = None
         self.loss_function = torch.nn.MSELoss()
         

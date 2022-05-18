@@ -42,8 +42,9 @@ def run_training_config(config):
             if config["experiment"]["experiment_type"] == "HarryPotter" or config["experiment"]["experiment_type"] == "NSD":
                 val_losses.append(val_loop(config["experiment"], exp, epoch, exp.val_loaders[0], device))
             else:
-                for val_loader in exp.val_loaders:
-                    val_losses.append(val_loop(config["experiment"], exp, epoch, val_loader, device))
+                if False:
+                    for val_loader in exp.val_loaders:
+                        val_losses.append(val_loop(config["experiment"], exp, epoch, val_loader, device))
             
         train_loss = train_loop(config["experiment"], exp, epoch, device)
         #save whenever you validate
@@ -55,7 +56,7 @@ def run_training_config(config):
                 else:
                     for i, val_name in enumerate(config["dataset"]["val_datasets"]):
                         wandb.log({val_name: val_losses[i]})
-                bbb.utils.save_model(exp, np.mean(val_losses), config, date, epoch)
+                #bbb.utils.save_model(exp, np.mean(val_losses), config, date, epoch)
 
         
 def train_loop(train_config, exp, epoch, device):

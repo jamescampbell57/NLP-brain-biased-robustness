@@ -10,6 +10,8 @@ experiment:
 dataset:
     train_datasets: ["japanese"]
     val_datasets: ["american","italian","japanese","chinese"]
+    train_limit: 10000
+    val_limit: 1000
     limit: 1000
     seed: 42
 model:

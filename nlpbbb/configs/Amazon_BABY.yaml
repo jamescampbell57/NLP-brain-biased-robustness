@@ -10,8 +10,8 @@ experiment:
 dataset:
     train_datasets: ["Baby_v1_00"]
     val_datasets: ["Baby_v1_00", "Shoes_v1_00", "Apparel_v1_00", "Music_v1_00", "Video_v1_00"]
-    train_limit: 50000
-    val_limit: 10000
+    train_limit: 10000
+    val_limit: 1000
     seed: 42
 model:
     brain_biased: False
