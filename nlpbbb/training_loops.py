@@ -117,8 +117,8 @@ def val_loop(train_config, exp, epoch, dataloader, device):
             print("Gold:",torch_gold)
 
             combined = torch.cat((torch_cosines, torch_gold), axis=0)
-            pbar.set_postfix(**{'val corref avg': torch.corrcoef(combined)[1,1]})
-            return torch.corrcoef(combined)[1,1]
+            pbar.set_postfix(**{'val corref avg': torch.corrcoef(combined)[0,1]})
+            return torch.corrcoef(combined)[0,1]
         else:
             pbar.set_postfix(**{'val acc avg': float(sum(primary_values)/sum(secondary_values))*100})
             return float(sum(primary_values)/sum(secondary_values))*100 
