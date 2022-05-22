@@ -43,8 +43,8 @@ class Experiment():
         self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=config["experiment"]["lr"])
         self.loss_function = torch.nn.MSELoss()
         #learning rate scheduler
-        #num_iters = sum([len(dl) for dl in self.train_loaders])
-        #self.lr_scheduler = get_scheduler(name="linear", optimizer=self.optimizer, num_warmup_steps=0, num_training_steps=num_iters)
+        num_iters = sum([len(dl) for dl in self.train_loaders])
+        self.lr_scheduler = get_scheduler(name="linear", optimizer=self.optimizer, num_warmup_steps=0, num_training_steps=num_iters)
         self.lr_scheduler = None
         
     def get_model(self, model_config):
@@ -52,6 +52,8 @@ class Experiment():
         
     def train_forward_pass(self, batch, device):
         pred = self.model(batch['sentence_1'], batch['sentence_2'])
+        #make class probabilities
+        pred = torch.softmax(pred, dim=1)
         targets = torch.stack(tuple(batch['labels'])).to(device)
         targets = torch.transpose(targets, 0, 1)
         loss = self.loss_function(pred, targets.float())
@@ -59,6 +61,9 @@ class Experiment():
     
     def val_forward_pass(self, batch, device):
         pred = self.model(batch['sentence_1'], batch['sentence_2'])
+        #make class probabilities
+        pred = torch.softmax(pred, dim=1)
+        #make class PREDICTIONS
         pred = torch.argmax(pred, axis=1)
         targets = torch.stack(tuple(batch['labels'])).to(device)
         targets = torch.transpose(targets, 0, 1)

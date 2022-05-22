@@ -13,19 +13,19 @@ from nlpbbb.paths import PATHS
 import os
 
 def change_all_keys(pre_odict):
-            def change_key(odict, old, new):
-                for _ in range(len(odict)):
-                    k, v = odict.popitem(False)
-                    odict[new if old == k else k] = v
-                    return odict
-            for key in pre_odict.keys():
-                if key[:5] == 'bert.':
-                    post_odict = change_key(pre_odict, key, key[5:])
-                    return change_all_keys(post_odict)
-                if key[:7] == 'linear.':
-                    del pre_odict[key]
-                    return change_all_keys(pre_odict)
-            return pre_odict
+    def change_key(odict, old, new):
+        for _ in range(len(odict)):
+            k, v = odict.popitem(False)
+            odict[new if old == k else k] = v
+            return odict
+    for key in pre_odict.keys():
+        if key[:5] == 'bert.':
+            post_odict = change_key(pre_odict, key, key[5:])
+            return change_all_keys(post_odict)
+        if key[:7] == 'linear.':
+            del pre_odict[key]
+            return change_all_keys(pre_odict)
+    return pre_odict
 
 class AmazonBERT(nn.Module):
     def __init__(self, model_config):
@@ -33,12 +33,12 @@ class AmazonBERT(nn.Module):
         super().__init__()
         self.bert = BertModel.from_pretrained('bert-base-cased')
         if model_config["brain_biased"]:
-            state_path = f'{PATHS["root"]}/state_dicts/{model_config["state_path"]}'
-            pre_odict = torch.load(state_path)
+            state_path = os.path.join(PATHS["root"], model_config["state_path"])
+            pre_odict = torch.load(state_path)["model_state_dict"]
             filtered_odict = change_all_keys(pre_odict)
             self.bert.load_state_dict(filtered_odict, strict=True)
         self.linear = nn.Linear(768, 5)
-        self.sigmoid = nn.Sigmoid()
+        self.softmax = nn.Softmax(dim=1)
         
     def forward(self, x):
         #embeddings = self.tokenizer(x, return_tensors='pt', padding=True)
@@ -50,7 +50,7 @@ class AmazonBERT(nn.Module):
         #    return cls_representation
         #if self.sigmoid_bool:
         #    return self.sigmoid(pred)
-        return pred
+        return self.softmax(pred)
 
     
 class MNLIBert(nn.Module):
@@ -59,8 +59,8 @@ class MNLIBert(nn.Module):
         self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
         self.bert = BertModel.from_pretrained('bert-base-cased')
         if model_config["brain_biased"]:
-            state_path = f'{PATHS["root"]}/state_dicts/{model_config["state_path"]}'
-            pre_odict = torch.load(state_path)
+            state_path = os.path.join(PATHS["root"], model_config["state_path"])
+            pre_odict = torch.load(state_path)["model_state_dict"]
             filtered_odict = change_all_keys(pre_odict)
             self.bert.load_state_dict(filtered_odict, strict=True)
         self.linear = nn.Linear(768*2, 3)
@@ -84,8 +84,8 @@ class SST2BERT(nn.Module):
         super().__init__()
         self.bert = BertModel.from_pretrained('bert-base-cased')
         if model_config["brain_biased"]:
-            state_path = f'{PATHS["root"]}/state_dicts/{model_config["state_path"]}'
-            pre_odict = torch.load(state_path)
+            state_path = os.path.join(PATHS["root"], model_config["state_path"])
+            pre_odict = torch.load(state_path)["model_state_dict"]
             filtered_odict = change_all_keys(pre_odict)
             self.bert.load_state_dict(filtered_odict, strict=True)
         self.linear = nn.Linear(768,num_out)
@@ -97,11 +97,7 @@ class SST2BERT(nn.Module):
         representations = self.bert(**x).last_hidden_state
         cls_representation = representations[:,0,:]
         pred = self.linear(cls_representation)
-        if self.return_CLS_representation:
-            return cls_representation
-        if self.sigmoid_bool:
-            return self.sigmoid(pred)
-        return pred
+        return self.sigmoid(pred)
     
     
 class STSBBERT(nn.Module):
@@ -110,8 +106,8 @@ class STSBBERT(nn.Module):
         self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
         self.bert = BertModel.from_pretrained('bert-base-cased')
         if model_config["brain_biased"]:
-            state_path = f'{PATHS["root"]}/state_dicts/{model_config["state_path"]}'
-            pre_odict = torch.load(state_path)
+            state_path = os.path.join(PATHS["root"], model_config["state_path"])
+            pre_odict = torch.load(state_path)["model_state_dict"]
             filtered_odict = change_all_keys(pre_odict)
             self.bert.load_state_dict(filtered_odict, strict=True)
         self.device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
@@ -129,20 +125,20 @@ class YelpBERT(nn.Module):
         self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
         self.bert = BertModel.from_pretrained('bert-base-cased')
         if model_config["brain_biased"]:
-            state_path = f'{PATHS["root"]}/state_dicts/{model_config["state_path"]}'
-            pre_odict = torch.load(state_path)
+            state_path = os.path.join(PATHS["root"], model_config["state_path"])
+            pre_odict = torch.load(state_path)["model_state_dict"]
             filtered_odict = change_all_keys(pre_odict)
             self.bert.load_state_dict(filtered_odict, strict=True)
         self.linear = nn.Linear(768,5)
-        self.sigmoid = nn.Sigmoid()
         self.device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+        self.softmax = nn.Softmax(dim=1)
     def forward(self, x):
         embeddings = self.tokenizer(x, return_tensors='pt', padding=True, truncation=True)
         embeddings.to(self.device)
         representations = self.bert(**embeddings).last_hidden_state
         cls_representation = representations[:,0,:]
         pred = self.linear(cls_representation)
-        return pred
+        return self.softmax(pred)
     
 
 class ReCoRDBERT(nn.Module):
@@ -151,8 +147,8 @@ class ReCoRDBERT(nn.Module):
         #self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
         self.bert = BertModel.from_pretrained('bert-base-cased')
         if model_config["brain_biased"]:
-            state_path = f'{PATHS["root"]}/state_dicts/{model_config["state_path"]}'
-            pre_odict = torch.load(state_path)
+            state_path = os.path.join(PATHS["root"], model_config["state_path"])
+            pre_odict = torch.load(state_path)["model_state_dict"]
             filtered_odict = change_all_keys(pre_odict)
             self.bert.load_state_dict(filtered_odict, strict=True)
         self.linear = nn.Linear(768,num_out)

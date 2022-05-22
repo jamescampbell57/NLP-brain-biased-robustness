@@ -40,8 +40,8 @@ class Experiment():
         self.model = self.get_model(config["model"])
         self.cos = nn.CosineSimilarity(dim=1, eps=1e-6)
         self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=config["experiment"]["lr"])
-        #num_iters = sum([len(dl) for dl in self.train_loaders])
-        #self.lr_scheduler = get_scheduler(name="linear", optimizer=self.optimizer, num_warmup_steps=0, num_training_steps=num_iters)
+        num_iters = sum([len(dl) for dl in self.train_loaders])
+        self.lr_scheduler = get_scheduler(name="linear", optimizer=self.optimizer, num_warmup_steps=0, num_training_steps=num_iters)
         self.loss_function = torch.nn.MSELoss()
         self.lr_scheduler = None
         
@@ -58,18 +58,11 @@ class Experiment():
         return loss
     
     def val_forward_pass(self, batch, device):
-        cosine_similarities = []
-        gold = []
-        
         vec_1 = self.model(batch['sentence_1'])
         vec_2 = self.model(batch['sentence_2'])
         cosine_similarity = self.cos(vec_1, vec_2)
         golds = batch['labels'].float()
-        for idx, similarity in enumerate(cosine_similarity):
-            cosine_similarities.append(similarity)
-            gold.append(golds[idx])
-            
-        return cosine_similarities, gold
+        return cosine_similarity, golds
 
 class STSBDataset(Dataset):
     def __init__(self, ds, dataset_config):
