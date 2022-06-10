@@ -25,7 +25,7 @@ def single_run(batch_size, learning_rate):
     amazon_video = load_dataset('amazon_us_reviews','Video_v1_00')
 
     baby_small = amazon_baby['train'].select(range(200000, len(amazon_baby['train']))).shuffle(seed=42).select(range(10000))
-    baby_train = amazon_baby['train'].select(range(200000)).shuffle(seed=42).select(range(50000))
+    baby_train = amazon_baby['train'].select(range(200000)).shuffle(seed=42).select(range(10000))
     shoes_small = amazon_shoes['train'].shuffle(seed=42).select(range(10000))
     clothes_small = amazon_clothes['train'].shuffle(seed=42).select(range(10000))
     music_small = amazon_music['train'].shuffle(seed=42).select(range(10000))
@@ -136,7 +136,7 @@ def single_run(batch_size, learning_rate):
         loss_function = torch.nn.MSELoss()
         #learning rate scheduler
         num_training_steps = num_epochs * len(dataloader)
-        #lr_scheduler = get_scheduler(name="linear", optimizer=optimizer, num_warmup_steps=0, num_training_steps=num_training_steps)
+        lr_scheduler = get_scheduler(name="linear", optimizer=optimizer, num_warmup_steps=0, num_training_steps=num_training_steps)
 
         device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
         model.to(device)
@@ -201,8 +201,7 @@ def single_run(batch_size, learning_rate):
     
     
     
-    
-for bs in [1, 8]:
-    for lr in [0.001, 0.0001, 0.00001]:
+for lr in [.0001, .00001]: 
+    for bs in [16,8,1]:
         single_run(bs, lr)
         
