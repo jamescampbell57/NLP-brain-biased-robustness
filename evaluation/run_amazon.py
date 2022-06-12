@@ -152,7 +152,8 @@ def single_run(batch_size, learning_rate):
                 features = {k: v.to(device) for k, v in batch.items() if k != 'labels'}
                 preds = model(features)
                 targets = F.one_hot((batch['labels']-1).to(torch.int64), num_classes=5).to(device)
-                loss = loss_function(preds, targets.float()) #replace .loss
+                loss = loss_function(preds, targets.float())
+                wandb.log({"training loss": loss.item()})
                 loss.backward()
 
                 optimizer.step()
