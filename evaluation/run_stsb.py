@@ -17,8 +17,6 @@ import wandb
 def single_run(batch_size, learning_rate):
     
     settings = 'bs: '+str(batch_size)+', lr: '+str(learning_rate)
-    
-    #wget https://data.deepai.org/Stsbenchmark.zip
 
     def read_csv(csv_file):
         file = open(csv_file)
@@ -30,11 +28,17 @@ def single_run(batch_size, learning_rate):
         file.close()
         return rows
 
-    data_path = '/home/ubuntu/NLP-brain-biased-robustness/data/stsbenchmark/'
+    
+    data_path = '~/nlp-brain-biased-robustness/data/stsb/stsbenchmark'
+    if not os.path.exists(data_path):
+        dataset_path = '~/nlp-brain-biased-robustness/data/stsb'
+        os.system('mkdir '+dataset_path)
+        os.system('wget https://data.deepai.org/Stsbenchmark.zip -P '+dataset_path)
+        os.system(f'unzip ~/nlp-brain-biased-robustness/data/stsb/Stsbenchmark.zip -d ~/nlp-brain-biased-robustness/data/stsb/')
 
-    train_set = read_csv(data_path+'sts-train.csv')
-    dev_set = read_csv(data_path+'sts-dev.csv')
-    test_set = read_csv(data_path+'sts-test.csv')
+    train_set = read_csv(os.path.join(data_path,'sts-train.csv'))
+    dev_set = read_csv(os.path.join(data_path,'sts-dev.csv'))
+    test_set = read_csv(os.path.join(data_path,'sts-test.csv'))
 
 
     def split_data():
