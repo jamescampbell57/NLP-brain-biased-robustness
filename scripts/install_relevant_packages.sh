@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export PYTHONPATH="$PYTHONPATH:/home/ubuntu/nlp-brain-biased-robustness"
+#export PYTHONPATH="$PYTHONPATH:/home/ubuntu/nlp-brain-biased-robustness"
 
 pip install torch
 pip install datasets
