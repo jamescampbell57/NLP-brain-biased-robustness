@@ -16,7 +16,7 @@ import wandb
 
 def single_run(batch_size, learning_rate):
     
-    settings = 'bs: '+str(batch_size)+', lr: '+str(learning_rate)
+    settings = f'bs: {batch_size}, lr: {learning_rate}'
     
     amazon_baby = load_dataset('amazon_us_reviews','Baby_v1_00')
     amazon_shoes = load_dataset('amazon_us_reviews','Shoes_v1_00')
@@ -124,11 +124,11 @@ def single_run(batch_size, learning_rate):
 
 
     def train(model, dataloader, num_epochs=10, settings=settings): #can scrap keyword
-        wandb.init(project="hyperparameter searches", entity="nlp-brain-biased-robustness")
-        wandb.run.name = 'amazon bert '+settings
+        run = wandb.init(project="hyperparameter searches", entity="nlp-brain-biased-robustness", reinit=True)
+        wandb.run.name = 'Amazon BERT '+settings
         wandb.config = {
           "learning_rate": learning_rate,
-          "epochs": 10,
+          "epochs": num_epochs,
           "batch_size": batch_size
         }
         #optimizer as usual
@@ -153,30 +153,23 @@ def single_run(batch_size, learning_rate):
                 preds = model(features)
                 targets = F.one_hot((batch['labels']-1).to(torch.int64), num_classes=5).to(device)
                 loss = loss_function(preds, targets.float())
-                wandb.log({"training loss": loss.item()})
                 loss.backward()
-
                 optimizer.step()
-                #lr_scheduler.step()
+                lr_scheduler.step()
                 optimizer.zero_grad()
+                wandb.log({"training loss": loss.item()})
                 progress_bar.update(1)
             baby_score = evaluate(model, baby_dataloader)
-            #print(baby_score)
             wandb.log({"baby": baby_score})
             shoes_score = evaluate(model, shoes_dataloader)
-            #print(shoes_score)
             wandb.log({"shoes": shoes_score})
             clothes_score = evaluate(model, clothes_dataloader)
-            #print(clothes_score)
             wandb.log({"clothes": clothes_score})
             music_score = evaluate(model, music_dataloader)
-            #print(music_score)
             wandb.log({"music": music_score})
             video_score = evaluate(model, video_dataloader)
-            #print(video_score)
             wandb.log({"video": video_score})
-            #print("_________________________________________________")
-
+        run.finish()
 
     def evaluate(model, dataloader):
         device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")

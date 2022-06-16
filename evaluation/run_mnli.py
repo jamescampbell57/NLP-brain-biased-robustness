@@ -17,11 +17,11 @@ import wandb
 
 def single_run(batch_size, learning_rate):
 
-    settings = 'bs: '+str(batch_size)+', lr: '+str(learning_rate)
+    settings = f'bs: {batch_size}, lr: {learning_rate}'
     
     ################################################################
 
-    dataset_path = '~/nlp-brain-biased-robustness/data/mnli'
+    dataset_path = '/home/ubuntu/nlp-brain-biased-robustness/data/mnli'
     data_path = dataset_path+'/multinli_1.0'
     if not os.path.exists(data_path):
         os.system('mkdir '+dataset_path)
@@ -175,11 +175,11 @@ def single_run(batch_size, learning_rate):
 
 
     def train(model, dataloader, num_epochs=10):
-        wandb.init(project="hyperparameter searches", entity="nlp-brain-biased-robustness")
-        wandb.run.name = 'mnli bert '+settings
+        run = wandb.init(project="hyperparameter searches", entity="nlp-brain-biased-robustness", reinit=True)
+        wandb.run.name = 'MNLI BERT '+settings
         wandb.config = {
           "learning_rate": learning_rate,
-          "epochs": 10,
+          "epochs": num_epochs,
           "batch_size": batch_size
         }
         #optimizer as usual
@@ -205,13 +205,11 @@ def single_run(batch_size, learning_rate):
                 targets = torch.stack(tuple(batch['labels'])).to(device)
                 targets = torch.transpose(targets, 0, 1)
                 loss = loss_function(pred, targets.float())
-
-                wandb.log({"training loss": loss.item()})
                 loss.backward()
-
                 optimizer.step()
                 lr_scheduler.step()
                 optimizer.zero_grad()
+                wandb.log({"training loss": loss.item()})
                 progress_bar.update(1)
             telephone_score = evaluate(model, telephone_val_dataloader)
             wandb.log({"telephone": telephone_score})
@@ -219,7 +217,7 @@ def single_run(batch_size, learning_rate):
             wandb.log({"letters": letters_score})
             facetoface_score = evaluate(model, facetoface_dataloader)
             wandb.log({"facetoface": facetoface_score})
-
+        run.finish()
 
     def evaluate(model, dataloader):
         device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
@@ -237,7 +235,6 @@ def single_run(batch_size, learning_rate):
                 num_correct += (pred==labels).sum()
                 num_samples += pred.size(0)
         return float(num_correct)/float(num_samples)*100 
-
 
 
     model = PlaceHolderBERT()

@@ -14,7 +14,7 @@ import wandb
 
 def single_run(batch_size, learning_rate):
     
-    settings = 'bs: '+str(batch_size)+', lr: '+str(learning_rate)
+    settings = f'bs: {batch_size}, lr: {learning_rate}'
     
     imdb = load_dataset('imdb')
     sst2 = load_dataset('glue','sst2')
@@ -56,8 +56,6 @@ def single_run(batch_size, learning_rate):
 
 
 
-
-
     def change_all_keys(pre_odict):
         def change_key(odict, old, new):
             for _ in range(len(odict)):
@@ -96,12 +94,11 @@ def single_run(batch_size, learning_rate):
 
 
     def train(model, dataloader, num_epochs=10):
-
-        wandb.init(project="hyperparameter searches", entity="nlp-brain-biased-robustness")
-        wandb.run.name = 'sst2 imdb bert '+settings
+        run = wandb.init(project="hyperparameter searches", entity="nlp-brain-biased-robustness", reinit=True)
+        wandb.run.name = 'sst2/IMDb BERT '+settings
         wandb.config = {
           "learning_rate": learning_rate,
-          "epochs": 10,
+          "epochs": num_epochs,
           "batch_size": batch_size
         }
 
@@ -121,24 +118,22 @@ def single_run(batch_size, learning_rate):
         #training loop
         model.train()
         for epoch in range(num_epochs):
-            for batch in dataloader: #tryin unpacking text from 'labels' as in model development
+            for batch in dataloader:
                 batch = {k: v.to(device) for k, v in batch.items()}
                 features = {k: v for k, v in batch.items() if k != 'labels'}
                 preds = model(features)
                 loss = loss_function(preds, batch['labels'].float())
-
-                wandb.log({"training loss": loss.item()})
                 loss.backward()
-
                 optimizer.step()
                 lr_scheduler.step()
                 optimizer.zero_grad()
+                wandb.log({"training loss": loss.item()})
                 progress_bar.update(1)
-
             IID_score = evaluate(model, imdb_test_loader)
             OOD_score = evaluate(model, sst2_test_loader)
             wandb.log({"imdb": IID_score})
             wandb.log({"sst2": OOD_score})
+        run.finish()
 
     def evaluate(model, dataloader):
         device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")

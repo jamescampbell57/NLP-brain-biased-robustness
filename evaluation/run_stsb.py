@@ -16,7 +16,7 @@ import wandb
 
 def single_run(batch_size, learning_rate):
     
-    settings = 'bs: '+str(batch_size)+', lr: '+str(learning_rate)
+    settings = f'bs: {batch_size}, lr: {learning_rate}'
 
     def read_csv(csv_file):
         file = open(csv_file)
@@ -123,11 +123,11 @@ def single_run(batch_size, learning_rate):
 
 
     def train(model, dataloader, num_epochs=10):
-        wandb.init(project="hyperparameter searches", entity="nlp-brain-biased-robustness")
-        wandb.run.name = 'stsb bert '+settings
+        run = wandb.init(project="hyperparameter searches", entity="nlp-brain-biased-robustness", reinit=True)
+        wandb.run.name = 'STS-b BERT '+settings
         wandb.config = {
           "learning_rate": learning_rate,
-          "epochs": 10,
+          "epochs": num_epochs,
           "batch_size": batch_size
         }
         #optimizer as usual
@@ -156,13 +156,11 @@ def single_run(batch_size, learning_rate):
                 cosine_similarity_times_5 = cos(vec_1, vec_2) * 5
                 targets = batch['labels'].float().to(device)
                 loss = loss_function(cosine_similarity_times_5, targets) 
-
-                wandb.log({"training loss": loss.item()})
                 loss.backward()
-
                 optimizer.step()
                 lr_scheduler.step()
                 optimizer.zero_grad()
+                wandb.log({"training loss": loss.item()})
                 progress_bar.update(1)
             headlines_score = evaluate(model, headlines_val_dataloader)
             wandb.log({'headlines': headlines_score})
@@ -172,7 +170,7 @@ def single_run(batch_size, learning_rate):
             wandb.log({'MSRpar': MSRpar_score})
             MSRvid_score = evaluate(model, MSRvid_dataloader)
             wandb.log({'MSRvid': MSRvid_score})
-
+        run.finish()
 
     def evaluate(model, dataloader):
         device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
