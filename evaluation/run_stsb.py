@@ -29,12 +29,12 @@ def single_run(batch_size, learning_rate):
         return rows
 
     
-    data_path = '~/nlp-brain-biased-robustness/data/stsb/stsbenchmark'
+    data_path = '/home/ubuntu/NLP-brain-biased-robustness/data/stsb/stsbenchmark'
     if not os.path.exists(data_path):
-        dataset_path = '~/nlp-brain-biased-robustness/data/stsb'
+        dataset_path = '/home/ubuntu/NLP-brain-biased-robustness/data/stsb'
         os.system('mkdir '+dataset_path)
         os.system('wget https://data.deepai.org/Stsbenchmark.zip -P '+dataset_path)
-        os.system(f'unzip ~/nlp-brain-biased-robustness/data/stsb/Stsbenchmark.zip -d ~/nlp-brain-biased-robustness/data/stsb/')
+        os.system(f'unzip ~/NLP-brain-biased-robustness/data/stsb/Stsbenchmark.zip -d ~/NLP-brain-biased-robustness/data/stsb/')
 
     train_set = read_csv(os.path.join(data_path,'sts-train.csv'))
     dev_set = read_csv(os.path.join(data_path,'sts-dev.csv'))
@@ -205,8 +205,8 @@ def single_run(batch_size, learning_rate):
     
 
     
-for lr in [.0001, .00001]: 
-    for bs in [16,8,1]:
+for lr in [.0001, .00005, .00001]: 
+    for bs in [8,16,1]:
         single_run(bs, lr)
         
 
