@@ -156,6 +156,6 @@ def single_run(batch_size, learning_rate):
     train(model, imdb_train_loader)
 
 
-for lr in [.0001, .00001]: 
-    for bs in [16,8,1]:
+for lr in [.0001, .00005, .00001]: 
+    for bs in [8,16,1]:
         single_run(bs, lr)
