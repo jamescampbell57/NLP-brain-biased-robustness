@@ -21,7 +21,7 @@ def single_run(batch_size, learning_rate):
     
     ################################################################
 
-    dataset_path = '/home/ubuntu/nlp-brain-biased-robustness/data/mnli'
+    dataset_path = '/home/ubuntu/NLP-brain-biased-robustness/data/mnli'
     data_path = dataset_path+'/multinli_1.0'
     if not os.path.exists(data_path):
         os.system('mkdir '+dataset_path)
