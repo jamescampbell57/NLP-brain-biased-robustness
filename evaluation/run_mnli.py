@@ -26,7 +26,7 @@ def single_run(batch_size, learning_rate):
     if not os.path.exists(data_path):
         os.system('mkdir '+dataset_path)
         os.system('wget https://cims.nyu.edu/~sbowman/multinli/multinli_1.0.zip -P '+dataset_path)
-        os.system(f'unzip ~/nlp-brain-biased-robustness/data/mnli/multinli_1.0.zip -d ~/nlp-brain-biased-robustness/data/mnli/')
+        os.system(f'unzip ~/NLP-brain-biased-robustness/data/mnli/multinli_1.0.zip -d ~/NLP-brain-biased-robustness/data/mnli/')
 
     ##################################################################
 
