@@ -113,10 +113,10 @@ from tqdm.auto import tqdm
 import wandb
 import os
 
-wandb.init(project="fMRI pretraining", entity="nlp-brain-biased-robustness")
-wandb.run.name = 'subject 1 harry potter
+run = wandb.init(project="fMRI pretraining", entity="nlp-brain-biased-robustness")
+wandb.run.name = 'subject 1 harry potter'
 wandb.config = {
-  "learning_rate": 5e-5,
+  "learning_rate": 1e-5,
   "epochs": 15,
   "batch_size": 8
 }
