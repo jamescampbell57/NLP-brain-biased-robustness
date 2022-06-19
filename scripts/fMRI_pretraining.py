@@ -19,7 +19,7 @@ class HarryPotterDataset(Dataset):
             for i in range(1,9):
                 os.system(f'wget http://www.cs.cmu.edu/~fmri/plosone/files/subject_{i}.mat -P '+data_path)
 
-        harry_potter = loadmat(os.paths.join(data_path, f'subject_{subject}.mat'))
+        harry_potter = loadmat(os.path.join(data_path, f'subject_{subject}.mat'))
 
         words = []
         for i in range(5176):
@@ -111,7 +111,6 @@ from torch.optim import AdamW
 from transformers import get_scheduler
 from tqdm.auto import tqdm
 import wandb
-import os
 
 run = wandb.init(project="fMRI pretraining", entity="nlp-brain-biased-robustness")
 wandb.run.name = 'subject 1 harry potter'
