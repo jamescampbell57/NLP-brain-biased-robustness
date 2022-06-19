@@ -163,7 +163,8 @@ def train(model, dataloader, num_epochs=40):
         wandb.log({"training loss": loss.item()})
         wandb.log({"val loss": val_loss})
         save_dir = '/home/ubuntu/NLP-brain-biased-robustness/state_dicts'
-        torch.save(model.state_dict(), os.path.join(save_dir, f'cereberto_epoch_{epoch}'))
+        if epoch % 20 == 0 or epoch == 5 or epoch == 3:
+            torch.save(model.state_dict(), os.path.join(save_dir, f'cereberto_epoch_{epoch}'))
         
 model = BrainBiasedBERT()
 train(model, train_dataloader)
