@@ -116,12 +116,13 @@ run = wandb.init(project="fMRI pretraining", entity="nlp-brain-biased-robustness
 wandb.run.name = 'subject 1 harry potter'
 wandb.config = {
   "learning_rate": 1e-5,
-  "epochs": 15,
+  "epochs": 40,
   "batch_size": 8
 }
 
 def evaluate(model, dataloader):
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+    loss_function = torch.nn.MSELoss()
     model.eval()
     with torch.no_grad():
         test_losses = []
@@ -134,7 +135,7 @@ def evaluate(model, dataloader):
     return torch.mean(torch.as_tensor(test_losses)) 
 
     
-def train(model, dataloader, num_epochs=15): 
+def train(model, dataloader, num_epochs=40): 
     optimizer = AdamW(model.parameters(), lr=1e-5)
     loss_function = torch.nn.MSELoss()
     num_training_steps = num_epochs * len(dataloader)
