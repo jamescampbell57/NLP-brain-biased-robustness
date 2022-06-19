@@ -75,11 +75,11 @@ class HarryPotterDataset(Dataset):
             self.fmri_data.append((actual_sentences[i], fmri[i,:]))
 
 
-def __getitem__(self, idx):
-    return self.fmri_data[idx]
-    
-def __len__(self):
-    return len(self.fmri_data)
+    def __getitem__(self, idx):
+        return self.fmri_data[idx]
+
+    def __len__(self):
+        return len(self.fmri_data)
 
 
 dataset_1 = HarryPotterDataset(1)
