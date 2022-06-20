@@ -175,7 +175,7 @@ def single_run(batch_size, learning_rate):
 
 
     def train(model, dataloader, num_epochs=10):
-        run = wandb.init(project="hyperparameter searches", entity="nlp-brain-biased-robustness", reinit=True)
+        run = wandb.init(project="brain biased hyperparameter search", entity="nlp-brain-biased-robustness", reinit=True)
         wandb.run.name = 'MNLI BERT '+settings
         wandb.config = {
           "learning_rate": learning_rate,
