@@ -101,7 +101,7 @@ def single_run(batch_size, learning_rate):
             #self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
             self.bert = BertModel.from_pretrained('bert-base-cased')
             if brain:
-                state_path = '/home/ubuntu/NLP-brain-biased-robustness/state_dicts/fine_tuned_model'
+                state_path = '/home/ubuntu/NLP-brain-biased-robustness/state_dicts/cereberto_epoch_5'
                 pre_odict = torch.load(state_path)
                 filtered_odict = change_all_keys(pre_odict)
                 self.bert.load_state_dict(filtered_odict, strict=True)
@@ -189,7 +189,7 @@ def single_run(batch_size, learning_rate):
                 num_samples += preds.size(0)
         return float(num_correct)/float(num_samples)*100 
 
-    model = PlaceHolderBERT()
+    model = PlaceHolderBERT(brain=True)
     train(model, baby_train_dataloader)
 
     
