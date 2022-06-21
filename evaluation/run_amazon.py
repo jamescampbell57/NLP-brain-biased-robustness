@@ -124,7 +124,7 @@ def single_run(batch_size, learning_rate):
 
 
     def train(model, dataloader, num_epochs=10, settings=settings): #can scrap keyword
-        run = wandb.init(project="hyperparameter searches", entity="nlp-brain-biased-robustness", reinit=True)
+        run = wandb.init(project="brain biased hyperparameter search", entity="nlp-brain-biased-robustness", reinit=True)
         wandb.run.name = 'Amazon BERT '+settings
         wandb.config = {
           "learning_rate": learning_rate,
@@ -195,7 +195,7 @@ def single_run(batch_size, learning_rate):
     
     
     
-for lr in [.0001, .00005, .00001]: 
+for lr in [.00001]: 
     for bs in [8,16,1]:
         single_run(bs, lr)
         
