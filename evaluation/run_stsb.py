@@ -109,7 +109,7 @@ def single_run(batch_size, learning_rate):
             self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
             self.bert = BertModel.from_pretrained('bert-base-cased')
             if brain:
-                state_path = '/home/ubuntu/NLP-brain-biased-robustness/state_dicts/fine_tuned_model'
+                state_path = '/home/ubuntu/NLP-brain-biased-robustness/state_dicts/cereberto_epoch_5'
                 pre_odict = torch.load(state_path)
                 filtered_odict = change_all_keys(pre_odict)
                 self.bert.load_state_dict(filtered_odict, strict=True)
@@ -123,7 +123,7 @@ def single_run(batch_size, learning_rate):
 
 
     def train(model, dataloader, num_epochs=10):
-        run = wandb.init(project="hyperparameter searches", entity="nlp-brain-biased-robustness", reinit=True)
+        run = wandb.init(project="brain biased hyperparameter search", entity="nlp-brain-biased-robustness", reinit=True)
         wandb.run.name = 'STS-b BERT '+settings
         wandb.config = {
           "learning_rate": learning_rate,
@@ -199,13 +199,13 @@ def single_run(batch_size, learning_rate):
         return (torch.corrcoef(combined)[0,1]).item()
 
 
-    model = PlaceHolderBERT()
+    model = PlaceHolderBERT(True)
     train(model, headlines_train_dataloader)
     
     
 
     
-for lr in [.0001, .00005, .00001]: 
+for lr in [.00001]: 
     for bs in [8,16,1]:
         single_run(bs, lr)
         
