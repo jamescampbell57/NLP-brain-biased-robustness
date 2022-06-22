@@ -152,7 +152,7 @@ def single_run(batch_size, learning_rate):
                 num_samples += preds.size(0)
         return float(num_correct)/float(num_samples)*100 
 
-    model = PlaceHolderBERT(True)
+    model = PlaceHolderBERT(brain=True)
     train(model, imdb_train_loader)
 
 

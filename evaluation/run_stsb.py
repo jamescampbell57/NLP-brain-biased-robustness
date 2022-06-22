@@ -199,7 +199,7 @@ def single_run(batch_size, learning_rate):
         return (torch.corrcoef(combined)[0,1]).item()
 
 
-    model = PlaceHolderBERT(True)
+    model = PlaceHolderBERT(brain=True)
     train(model, headlines_train_dataloader)
     
     
