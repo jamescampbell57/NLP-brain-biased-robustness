@@ -165,7 +165,7 @@ def single_run(batch_size, learning_rate):
             headlines_score = evaluate(model, headlines_val_dataloader)
             wandb.log({'headlines': headlines_score})
             images_score = evaluate(model, images_dataloader)
-            wandb.log({'images': images})
+            wandb.log({'images': images_score})
             MSRpar_score = evaluate(model, MSRpar_dataloader)
             wandb.log({'MSRpar': MSRpar_score})
             MSRvid_score = evaluate(model, MSRvid_dataloader)
