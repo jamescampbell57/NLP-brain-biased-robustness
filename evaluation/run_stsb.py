@@ -205,7 +205,7 @@ def single_run(batch_size, learning_rate):
     
 
     
-for lr in [.00001]: 
+for lr in [.0001, .00005]: 
     for bs in [8,16,1]:
         single_run(bs, lr)
         
