@@ -200,8 +200,8 @@ def evaluate(model, dataloader):
     return torch.mean(torch.as_tensor(test_losses)) 
 
     
-def train(model, dataloader, num_epochs=100): 
-    optimizer = AdamW(model.parameters(), lr=1e-5)
+def train(model, dataloader, num_epochs=750): 
+    optimizer = AdamW(model.parameters(), lr=1e-4)
     loss_function = torch.nn.MSELoss()
     num_training_steps = num_epochs * len(dataloader)
     lr_scheduler = get_scheduler(name="linear", optimizer=optimizer, num_warmup_steps=0, num_training_steps=num_training_steps)
@@ -228,8 +228,8 @@ def train(model, dataloader, num_epochs=100):
         wandb.log({"training loss": loss.item()})
         wandb.log({"val loss": val_loss})
         save_dir = '/home/ubuntu/NLP-brain-biased-robustness/state_dicts'
-        if epoch % 10 == 0 or epoch == 5 or epoch == 3 or epoch ==1 or epoch ==2 or epoch==4:
-            torch.save(model.state_dict(), os.path.join(save_dir, f'cereberto_NSD_parc_4_subjs_epoch_{epoch}'))
+        if epoch % 50 == 0 or epoch == 10 or epoch == 20 or epoch == 5 or epoch == 3 or epoch ==1 or epoch ==2 or epoch==4:
+            torch.save(model.state_dict(), os.path.join(save_dir, f'cereberto_HP_epoch_{epoch}'))
         
         
 
@@ -241,23 +241,24 @@ if __name__ == "__main__":
     import wandb
 
     run = wandb.init(project="fMRI pretraining", entity="nlp-brain-biased-robustness")
-    wandb.run.name = 'NSD parcellated subjects 1-4'
+    wandb.run.name = 'Harry Potter pre-training fast'
     wandb.config = {
-      "learning_rate": 1e-5,
-      "epochs": 40,
-      "batch_size": 16
+      "learning_rate": 1e-4,
+      "epochs": 750,
+      "batch_size": 8
     }
         
 
-    dataset_2 = NSD()
-    split_place = int(.8*len(dataset_2))
-    train_dataset = dataset_2.fmri_data[:split_place]
-    val_dataset = dataset_2.fmri_data[split_place:]
+    dataset_1 = HarryPotterDataset(1)
+    split_place = int(.8*len(dataset_1))
+    split_place_2 = int(.85*len(dataset_1))
+    train_dataset = dataset_1.fmri_data[:split_place]
+    val_dataset = dataset_1.fmri_data[split_place_2:]
 
 
-    train_dataloader = DataLoader(train_dataset, batch_size=16, shuffle=True)
-    test_dataloader = DataLoader(val_dataset, batch_size=16, shuffle=False)
+    train_dataloader = DataLoader(train_dataset, batch_size=8, shuffle=True)
+    test_dataloader = DataLoader(val_dataset, batch_size=8, shuffle=False)
     
         
-    model = BrainBiasedBERT(num_voxels=23)
+    model = BrainBiasedBERT()#num_voxels=23)
     train(model, train_dataloader)

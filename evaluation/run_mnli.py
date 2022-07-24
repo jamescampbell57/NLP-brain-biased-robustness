@@ -158,7 +158,7 @@ def single_run(batch_size, learning_rate):
             self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
             self.bert = BertModel.from_pretrained('bert-base-cased')
             if brain:
-                state_path = '/home/ubuntu/NLP-brain-biased-robustness/state_dicts/cereberto_epoch_5'
+                state_path = '/home/ubuntu/NLP-brain-biased-robustness/state_dicts/cereberto_HP_epoch_100'
                 pre_odict = torch.load(state_path)
                 filtered_odict = change_all_keys(pre_odict)
                 self.bert.load_state_dict(filtered_odict, strict=True)
@@ -175,7 +175,7 @@ def single_run(batch_size, learning_rate):
 
 
     def train(model, dataloader, num_epochs=10):
-        run = wandb.init(project="brain biased hyperparameter search", entity="nlp-brain-biased-robustness", reinit=True)
+        run = wandb.init(project="brain biased hyperparameter search 100", entity="nlp-brain-biased-robustness", reinit=True)
         wandb.run.name = 'MNLI BERT '+settings
         wandb.config = {
           "learning_rate": learning_rate,
