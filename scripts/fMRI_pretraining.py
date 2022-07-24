@@ -130,22 +130,24 @@ class NSD(Dataset):
 
         NSD_fmri_parcellated = np.empty((22500,23,8))
         for subject in range(8):
-            X = scipy.io.loadmat(data_path+'X'+str(subject+1)+'.mat')
+            X = scipy.io.loadmat(f"{data_path}X{subject+1}.mat")
             NSD_fmri_parcellated[:,:,subject] = X['X']
 
 
         self.fmri_data = []
-        for subject in range(4):
-            for my_index in range(22000):
-                descriptions = index_to_captions(my_index, 1)
-                brain_vec = NSD_fmri_parcellated[my_index,:,0]
+        for my_index in range(22000):
+            for subject in range(4):
+        #for subject in range(4):
+            #for my_index in range(22000):
+                descriptions = index_to_captions(my_index, subject+1)
+                brain_vec = NSD_fmri_parcellated[my_index,:,subject]
                 for description in descriptions[:3]:
                     example = (description, brain_vec)
                     self.fmri_data.append(example)
 
         if voxels:
             #implement separate function for voxel-wise data
-            assert(False)
+            assert False, "voxels not implemented"
 
         
     def __getitem__(self, idx):
@@ -154,18 +156,7 @@ class NSD(Dataset):
     def __len__(self):
         return len(self.fmri_data)
 
-                          
-     
-dataset_2 = NSD()
-random.shuffle(dataset_2)
-split_place = int(.8*len(dataset_2))
-train_dataset = dataset_2[:split_place]
-val_dataset = dataset_2[split_place:]
-
-
-train_dataloader = DataLoader(train_dataset, batch_size=16, shuffle=True)
-test_dataloader = DataLoader(val_dataset, batch_size=16, shuffle=False)
-
+       
 
 #dataset_1 = HarryPotterDataset(1)
 #n_rows = len(dataset_1)
@@ -192,18 +183,7 @@ class BrainBiasedBERT(nn.Module):
         return pred_fmri
     
     
-from torch.optim import AdamW
-from transformers import get_scheduler
-from tqdm.auto import tqdm
-import wandb
 
-run = wandb.init(project="fMRI pretraining", entity="nlp-brain-biased-robustness")
-wandb.run.name = 'NSD parcellated subjects 1-4'
-wandb.config = {
-  "learning_rate": 1e-5,
-  "epochs": 40,
-  "batch_size": 16
-}
 
 def evaluate(model, dataloader):
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
@@ -220,7 +200,7 @@ def evaluate(model, dataloader):
     return torch.mean(torch.as_tensor(test_losses)) 
 
     
-def train(model, dataloader, num_epochs=40): 
+def train(model, dataloader, num_epochs=100): 
     optimizer = AdamW(model.parameters(), lr=1e-5)
     loss_function = torch.nn.MSELoss()
     num_training_steps = num_epochs * len(dataloader)
@@ -249,7 +229,35 @@ def train(model, dataloader, num_epochs=40):
         wandb.log({"val loss": val_loss})
         save_dir = '/home/ubuntu/NLP-brain-biased-robustness/state_dicts'
         if epoch % 10 == 0 or epoch == 5 or epoch == 3 or epoch ==1 or epoch ==2 or epoch==4:
-            torch.save(model.state_dict(), os.path.join(save_dir, f'cereberto_NSD_parc_epoch_{epoch}'))
+            torch.save(model.state_dict(), os.path.join(save_dir, f'cereberto_NSD_parc_4_subjs_epoch_{epoch}'))
         
-model = BrainBiasedBERT(num_voxels=23)
-train(model, train_dataloader)
+        
+
+if __name__ == "__main__":
+    
+    from torch.optim import AdamW
+    from transformers import get_scheduler
+    from tqdm.auto import tqdm
+    import wandb
+
+    run = wandb.init(project="fMRI pretraining", entity="nlp-brain-biased-robustness")
+    wandb.run.name = 'NSD parcellated subjects 1-4'
+    wandb.config = {
+      "learning_rate": 1e-5,
+      "epochs": 40,
+      "batch_size": 16
+    }
+        
+
+    dataset_2 = NSD()
+    split_place = int(.8*len(dataset_2))
+    train_dataset = dataset_2.fmri_data[:split_place]
+    val_dataset = dataset_2.fmri_data[split_place:]
+
+
+    train_dataloader = DataLoader(train_dataset, batch_size=16, shuffle=True)
+    test_dataloader = DataLoader(val_dataset, batch_size=16, shuffle=False)
+    
+        
+    model = BrainBiasedBERT(num_voxels=23)
+    train(model, train_dataloader)
