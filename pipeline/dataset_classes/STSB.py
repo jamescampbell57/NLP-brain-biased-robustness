@@ -4,7 +4,7 @@ import csv
 import random
 
 class STSB(Dataset):
-    def __init__(self, split, n_val=500, n_train=1500, data_dir='/home/ubuntu/eNTK-robustness/data', train_split='headlines'):
+    def __init__(self, split, n_val=500, n_train=1500, data_dir='/home/ubuntu/NLP-brain-biased-robustness/data', train_split='headlines'):
         
         if not os.path.exists(f'{data_dir}/stsb'):
             os.system(f'mkdir {data_dir}/stsb')
