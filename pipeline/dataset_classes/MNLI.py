@@ -5,7 +5,7 @@ import sys
 import csv
 
 class MnliDataset(Dataset):
-    def __init__(self, split, data_dir='/home/ubuntu/eNTK-robustness/data'):
+    def __init__(self, split, data_dir='/home/ubuntu/NLP-brain-biased-robustness/data'):
         #supported splits include: "train", "mismatched", "matched", "telephone", "letters", "facetoface"
         #need to add size specifications
         if not os.path.exists(data_dir):
